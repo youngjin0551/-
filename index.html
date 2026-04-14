@@ -4,345 +4,675 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="가계부">
 <meta name="theme-color" content="#0a0a0f">
-<title>찬진 가계부</title>
+<link rel="manifest" href="manifest.json">
+<title>우리 가족 가계부</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0a0a0f; --surface:#12121a; --card:#1a1a26; --border:#2a2a3e;
-  --text:#e8e8f0; --muted:#5a5a7a;
-  --wife:#f472b6; --wife-d:#2d1020;
-  --husb:#60a5fa; --husb-d:#0f1f35;
-  --joint:#a78bfa; --joint-d:#1e1030;
-  --income:#34d399; --expense:#f87171; --fixed:#fbbf24;
+  --bg:        #0a0a0f;
+  --surface:   #12121a;
+  --card:      #1a1a26;
+  --border:    #2a2a3e;
+  --text:      #e8e8f0;
+  --muted:     #6b6b8a;
+  --wife:      #f472b6;
+  --wife-dim:  #3d1a2e;
+  --husb:      #60a5fa;
+  --husb-dim:  #1a2a3d;
+  --joint:     #a78bfa;
+  --joint-dim: #2a1a3d;
+  --income:    #34d399;
+  --expense:   #f87171;
+  --fixed:     #fbbf24;
+  --safe: env(safe-area-inset-bottom, 0px);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:15px;overscroll-behavior:none;min-height:100dvh;}
-.app{width:100%;min-height:100dvh;position:relative;}
 
-/* ── 헤더 ── */
-.hdr{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);width:100%;}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:env(safe-area-inset-top,12px) 16px 8px;}
-.logo{font-size:15px;font-weight:900;background:linear-gradient(135deg,var(--wife),var(--husb));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hdr-right{display:flex;align-items:center;gap:8px;}
-.mnav{display:flex;align-items:center;gap:6px;}
-.mbtn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.mlbl{font-size:13px;font-weight:700;min-width:56px;text-align:center;font-family:'DM Mono',monospace;}
-.sync-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:4px;}
-.sync-btn.linked{border-color:var(--income);color:var(--income);}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-/* ── 탭 ── */
-.tabs{display:flex;padding:0 8px 8px;}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:none;background:none;color:var(--muted);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;border-radius:10px;border-bottom:2px solid transparent;transition:all .15s;}
-.tab.on{color:var(--wife);border-bottom-color:var(--wife);}
-.tab-ico{font-size:22px;line-height:1;}
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  font-size: 14px;
+}
+
+/* ── 상단 헤더 ── */
+.app-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 20px; padding-right: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+}
+.app-title {
+  font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--wife), var(--husb));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.month-nav {
+  display: flex; align-items: center; gap: 10px;
+}
+.month-btn {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--muted); border-radius: 8px;
+  width: 30px; height: 30px; font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.month-label { font-size: 13px; font-weight: 600; color: var(--text); min-width: 60px; text-align: center; }
+
+/* ── 탭바 ── */
+.tab-bar {
+  display: flex; border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 8px 4px; cursor: pointer;
+  color: var(--muted); font-size: 10px; font-weight: 500;
+  border: none; background: none; transition: color .2s;
+}
+.tab-item.active { color: var(--wife); }
+.tab-icon { font-size: 20px; line-height: 1; }
 
 /* ── 스크롤 영역 ── */
-.scroll{padding:12px 16px 88px;}
+.scroll-area {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 105px);
+  padding-bottom: calc(80px + var(--safe));
+  min-height: 100dvh;
+}
+
+/* ── 뷰 패널 ── */
+.view { display: none; padding: 16px; }
+.view.active { display: block; }
 
 /* ── 요약 카드 ── */
-.srow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
-.scard{background:var(--card);border-radius:16px;padding:13px 15px;border:1px solid var(--border);}
-.scard.full{grid-column:1/-1;}
-.slbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.3px;margin-bottom:4px;}
-.sval{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-1px;}
-.ssub{font-size:10px;color:var(--muted);margin-top:4px;}
+.summary-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+.sum-card {
+  background: var(--card); border-radius: 16px; padding: 14px 16px;
+  border: 1px solid var(--border);
+}
+.sum-card.full { grid-column: 1/-1; }
+.sum-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+.sum-value { font-size: 22px; font-weight: 700; letter-spacing: -1px; font-family: 'DM Mono', monospace; }
+.sum-value.income  { color: var(--income); }
+.sum-value.expense { color: var(--expense); }
+.sum-value.balance { color: var(--text); }
+.sum-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-/* ── 지출자 카드 ── */
-.orow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:13px;}
-.ocard{border-radius:13px;padding:10px 6px;text-align:center;border:1.5px solid;}
-.ocard.wife{background:var(--wife-d);border-color:var(--wife);}
-.ocard.husb{background:var(--husb-d);border-color:var(--husb);}
-.ocard.joint{background:var(--joint-d);border-color:var(--joint);}
-.onm{font-size:10px;font-weight:800;margin-bottom:4px;}
-.ocard.wife .onm{color:var(--wife);}
-.ocard.husb .onm{color:var(--husb);}
-.ocard.joint .onm{color:var(--joint);}
-.oamt{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;}
+/* ── 지출자별 미니카드 ── */
+.owner-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.owner-card {
+  border-radius: 14px; padding: 12px 10px; text-align: center;
+  border: 1px solid;
+}
+.owner-card.wife  { background: var(--wife-dim);  border-color: var(--wife);  }
+.owner-card.husb  { background: var(--husb-dim);  border-color: var(--husb);  }
+.owner-card.joint { background: var(--joint-dim); border-color: var(--joint); }
+.owner-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.owner-card.wife  .owner-name { color: var(--wife); }
+.owner-card.husb  .owner-name { color: var(--husb); }
+.owner-card.joint .owner-name { color: var(--joint); }
+.owner-amount { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text); }
 
-/* ── 섹션 타이틀 ── */
-.stitle{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin:14px 0 8px;}
+/* ── 섹션 제목 ── */
+.section-title {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin: 18px 0 8px;
+}
 
-/* ── 거래 아이템 ── */
-.txlist{display:flex;flex-direction:column;gap:5px;}
-.txitem{background:var(--card);border-radius:13px;padding:10px 11px;border:1px solid var(--border);display:flex;align-items:center;gap:9px;position:relative;overflow:hidden;}
-.txitem.wife{border-left:3px solid var(--wife);}
-.txitem.husb{border-left:3px solid var(--husb);}
-.txitem.joint{border-left:3px solid var(--joint);}
-.txico{width:34px;height:34px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.txinfo{flex:1;min-width:0;}
-.txname{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.txmeta{font-size:10px;color:var(--muted);margin-top:2px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
-.badge{font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;}
-.badge.wife{background:var(--wife-d);color:var(--wife);}
-.badge.husb{background:var(--husb-d);color:var(--husb);}
-.badge.joint{background:var(--joint-d);color:var(--joint);}
-.tbadge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;}
-.tbadge.income{background:rgba(52,211,153,.12);color:var(--income);}
-.tbadge.fixed{background:rgba(251,191,36,.12);color:var(--fixed);}
-.tbadge.variable{background:rgba(248,113,113,.1);color:var(--expense);}
-.txamt{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;text-align:right;white-space:nowrap;}
-.txamt.inc{color:var(--income);}
-.txamt.exp{color:var(--expense);}
-.delbtn{width:24px;height:24px;border-radius:7px;background:rgba(248,113,113,.08);border:none;color:var(--expense);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ddiv{font-size:10px;font-weight:800;color:var(--muted);padding:8px 0 4px;display:flex;align-items:center;gap:8px;}
-.ddiv::after{content:'';flex:1;height:1px;background:var(--border);}
+/* ── 거래 목록 ── */
+.tx-list { display: flex; flex-direction: column; gap: 6px; }
+.tx-item {
+  background: var(--card); border-radius: 14px; padding: 12px 14px;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
+  animation: slideIn .2s ease;
+}
+@keyframes slideIn {
+  from { opacity:0; transform: translateY(8px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.tx-item::before {
+  content:''; position: absolute; left:0; top:0; bottom:0; width: 3px;
+}
+.tx-item.wife::before  { background: var(--wife); }
+.tx-item.husb::before  { background: var(--husb); }
+.tx-item.joint::before { background: var(--joint); }
 
-/* ── 자산 ── */
-.asec{margin-bottom:15px;}
-.asec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.atnm{font-size:13px;font-weight:800;}
-.attot{margin-left:auto;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--income);}
-.aitem{background:var(--card);border-radius:12px;padding:10px 12px;border:1px solid var(--border);margin-bottom:5px;display:flex;align-items:center;gap:9px;}
-.ainf{flex:1;min-width:0;}
-.anm{font-size:14px;font-weight:600;}
-.asub{font-size:10px;color:var(--muted);margin-top:2px;display:flex;gap:5px;align-items:center;}
-.avals{text-align:right;}
-.acur{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;}
-.apnl{font-size:10px;margin-top:2px;font-family:'DM Mono',monospace;}
-.apnl.pos{color:var(--income);}
-.apnl.neg{color:var(--expense);}
+.tx-icon {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  background: var(--surface);
+}
+.tx-info { flex: 1; min-width: 0; }
+.tx-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; gap: 6px; align-items: center; }
+.owner-badge {
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;
+}
+.owner-badge.wife  { background: var(--wife-dim);  color: var(--wife);  }
+.owner-badge.husb  { background: var(--husb-dim);  color: var(--husb);  }
+.owner-badge.joint { background: var(--joint-dim); color: var(--joint); }
+.type-badge {
+  font-size: 10px; padding: 1px 5px; border-radius: 4px; font-weight: 600;
+}
+.type-badge.fixed    { background: rgba(251,191,36,.15);  color: var(--fixed); }
+.type-badge.variable { background: rgba(248,113,113,.12); color: var(--expense); }
+.type-badge.income-t { background: rgba(52,211,153,.12);  color: var(--income); }
 
-/* ── 대시보드 ── */
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.dcard{background:var(--card);border-radius:13px;padding:13px;border:1px solid var(--border);}
-.dcard.wide{grid-column:1/-1;}
-.dlbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.3px;margin-bottom:6px;}
-.dval{font-size:22px;font-weight:800;font-family:'DM Mono',monospace;}
-.pbar-wrap{margin-bottom:10px;}
-.pbar-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
-.pbar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.pfill{height:100%;border-radius:3px;transition:width .4s;}
+.tx-amount { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 600; text-align: right; }
+.tx-amount.income  { color: var(--income); }
+.tx-amount.expense { color: var(--expense); }
 
-/* ── FAB ── */
-.fab{position:fixed;right:20px;bottom:24px;width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--wife),#a855f7);border:none;color:#fff;font-size:26px;box-shadow:0 5px 18px rgba(244,114,182,.4);cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;transition:transform .12s;}
-.fab:active{transform:scale(.92);}
+.tx-delete {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: rgba(248,113,113,.1); border: none; color: var(--expense);
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
 
+/* ── FAB 버튼 ── */
+.fab {
+  position: fixed; right: 20px;
+  bottom: calc(68px + var(--safe) + 16px);
+  width: 56px; height: 56px; border-radius: 18px;
+  background: linear-gradient(135deg, var(--wife), #a855f7);
+  border: none; color: #fff; font-size: 26px;
+  box-shadow: 0 8px 24px rgba(244,114,182,.4);
+  cursor: pointer; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+}
+.fab:active { transform: scale(.93); box-shadow: 0 4px 12px rgba(244,114,182,.3); }
 
 /* ── 모달 ── */
-.mback{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:100;display:none;align-items:flex-end;justify-content:center;}
-.mback.open{display:flex;}
-.mbox{width:100%;background:var(--surface);border-radius:24px 24px 0 0;padding:0 16px 32px;border:1px solid var(--border);border-bottom:none;max-height:93dvh;overflow-y:auto;animation:slideUp .25s cubic-bezier(.16,1,.3,1);}
-@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.mhandle{width:32px;height:4px;background:var(--border);border-radius:2px;margin:11px auto 16px;}
-.mtitle{font-size:18px;font-weight:800;margin-bottom:16px;letter-spacing:-.5px;}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.modal-hdr .mtitle{margin-bottom:0;}
-.close-btn{width:32px;height:32px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.flbl{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;display:block;margin-bottom:6px;}
-.finp,.fsel{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;color:var(--text);font-size:15px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-bottom:11px;appearance:none;-webkit-appearance:none;transition:border-color .15s;}
-.finp:focus,.fsel:focus{border-color:var(--wife);}
-.finp.big{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;text-align:right;}
-.adisplay{text-align:right;font-size:10px;color:var(--muted);margin-top:-9px;margin-bottom:10px;}
-.selwrap{position:relative;margin-bottom:11px;}
-.selwrap .fsel{margin-bottom:0;}
-.selwrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-.trow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:13px;}
-.tbtn{padding:9px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:10px;font-weight:800;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;transition:all .12s;}
-.tbtn.on.inc{border-color:var(--income);background:rgba(52,211,153,.1);color:var(--income);}
-.tbtn.on.fix{border-color:var(--fixed);background:rgba(251,191,36,.1);color:var(--fixed);}
-.tbtn.on.var{border-color:var(--expense);background:rgba(248,113,113,.1);color:var(--expense);}
-.osel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:13px;}
-.obtn{padding:9px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:10px;font-weight:800;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .12s;}
-.obtn.on.wife{border-color:var(--wife);background:var(--wife-d);color:var(--wife);}
-.obtn.on.husb{border-color:var(--husb);background:var(--husb-d);color:var(--husb);}
-.obtn.on.joint{border-color:var(--joint);background:var(--joint-d);color:var(--joint);}
-.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:13px;}
-.cbtn{padding:7px 3px;border-radius:9px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:10px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .12s;}
-.cbtn .ce{font-size:17px;}
-.cbtn.on{border-color:var(--wife);background:rgba(244,114,182,.1);color:var(--wife);}
-.savebtn{width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--wife),#a855f7);color:#fff;font-size:15px;font-weight:800;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:6px;box-shadow:0 5px 18px rgba(244,114,182,.3);transition:opacity .12s,transform .1s;}
-.savebtn:active{opacity:.85;transform:scale(.98);}
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px); z-index: 200;
+  display: none; align-items: flex-end;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  width: 100%; background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 0 20px calc(20px + var(--safe));
+  border: 1px solid var(--border); border-bottom: none;
+  max-height: 92dvh; overflow-y: auto;
+  animation: slideUp .25s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.modal-handle {
+  width: 36px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 12px auto 20px;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.5px; }
 
-/* ── 공유 모달 ── */
-.share-section{margin-bottom:20px;}
-.share-section-title{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
-.code-display{background:var(--card);border:2px solid var(--wife);border-radius:16px;padding:20px;text-align:center;margin-bottom:10px;}
-.code-text{font-family:'DM Mono',monospace;font-size:32px;font-weight:700;color:var(--wife);letter-spacing:6px;}
-.code-hint{font-size:11px;color:var(--muted);margin-top:6px;}
-.copy-btn{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--wife);background:transparent;color:var(--wife);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:20px;}
-.divider{height:1px;background:var(--border);margin:20px 0;}
-.join-row{display:flex;gap:8px;}
-.join-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace;font-weight:700;letter-spacing:3px;outline:none;text-transform:uppercase;}
-.join-input:focus{border-color:var(--husb);}
-.join-btn{padding:11px 16px;border-radius:12px;border:none;background:var(--husb);color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
-.sync-status{background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--border);text-align:center;}
-.sync-status.linked{border-color:var(--income);}
-.sync-status-icon{font-size:28px;margin-bottom:6px;}
-.sync-status-text{font-size:13px;font-weight:700;}
-.sync-status-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-.unlink-btn{margin-top:12px;padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+/* ── 폼 요소 ── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; letter-spacing: .5px; }
+.form-input, .form-select {
+  width: 100%; background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 13px 14px; color: var(--text);
+  font-size: 15px; font-family: 'Noto Sans KR', sans-serif;
+  outline: none; transition: border-color .2s;
+  appearance: none; -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus { border-color: var(--wife); }
+.form-input.amount-input {
+  font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 600;
+  text-align: right;
+}
+.amount-display {
+  text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px;
+}
 
-/* ── 싱크 인디케이터 ── */
-.syncing{position:fixed;top:70px;right:16px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--income);z-index:200;display:none;align-items:center;gap:6px;}
-.syncing.show{display:flex;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.spin{display:inline-block;animation:spin 1s linear infinite;}
+/* ── 타입 토글 ── */
+.type-toggle { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+.toggle-btn {
+  padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 12px; font-weight: 600;
+  cursor: pointer; text-align: center; transition: all .15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.toggle-btn.active.income-t  { border-color: var(--income); background: rgba(52,211,153,.12); color: var(--income); }
+.toggle-btn.active.fixed     { border-color: var(--fixed);  background: rgba(251,191,36,.12);  color: var(--fixed); }
+.toggle-btn.active.variable  { border-color: var(--expense);background: rgba(248,113,113,.12);color: var(--expense); }
+
+/* ── 지출자 선택 ── */
+.owner-select-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+.owner-btn {
+  padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 12px; font-weight: 700;
+  cursor: pointer; text-align: center; transition: all .15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.owner-btn.active.wife  { border-color: var(--wife);  background: var(--wife-dim);  color: var(--wife); }
+.owner-btn.active.husb  { border-color: var(--husb);  background: var(--husb-dim);  color: var(--husb); }
+.owner-btn.active.joint { border-color: var(--joint); background: var(--joint-dim); color: var(--joint); }
+
+/* ── 카테고리 그리드 ── */
+.cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 14px; }
+.cat-btn {
+  padding: 8px 4px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 11px; font-weight: 500;
+  cursor: pointer; text-align: center; transition: all .15s;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.cat-btn .cat-emoji { font-size: 18px; }
+.cat-btn.active { border-color: var(--wife); background: rgba(244,114,182,.1); color: var(--wife); }
+
+/* ── 저장 버튼 ── */
+.save-btn {
+  width: 100%; padding: 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, var(--wife), #a855f7);
+  color: #fff; font-size: 16px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; margin-top: 8px;
+  box-shadow: 0 6px 20px rgba(244,114,182,.35);
+  transition: opacity .15s, transform .1s;
+}
+.save-btn:active { opacity: .85; transform: scale(.98); }
+
+/* ── 자산 뷰 ── */
+.asset-type-section { margin-bottom: 16px; }
+.asset-type-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.asset-type-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.asset-type-name { font-size: 13px; font-weight: 700; }
+.asset-type-total { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: var(--income); }
+
+.asset-item {
+  background: var(--card); border-radius: 12px; padding: 12px 14px;
+  border: 1px solid var(--border); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.asset-info { flex: 1; min-width: 0; }
+.asset-name { font-size: 14px; font-weight: 600; }
+.asset-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.asset-values { text-align: right; }
+.asset-cur  { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 700; }
+.asset-pnl  { font-size: 11px; margin-top: 2px; font-family: 'DM Mono', monospace; }
+.asset-pnl.pos { color: var(--income); }
+.asset-pnl.neg { color: var(--expense); }
+
+/* ── 대시보드 ── */
+.dash-section { margin-bottom: 20px; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dash-card {
+  background: var(--card); border-radius: 14px; padding: 14px;
+  border: 1px solid var(--border);
+}
+.dash-card.wide { grid-column: 1/-1; }
+.dash-card-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: .3px; }
+.dash-card-value { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+/* ── 구분선 ── */
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── 프로그레스 바 ── */
+.progress-wrap { margin-top: 8px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
 
 /* ── 빈 상태 ── */
-.empty{text-align:center;padding:40px 14px;color:var(--muted);}
-.emico{font-size:40px;margin-bottom:10px;}
-.emtxt{font-size:13px;line-height:1.7;white-space:pre-line;}
+.empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; line-height: 1.6; }
+
+/* ── 하단 탭바 고정 ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding-bottom: var(--safe);
+}
 
 /* ── 토스트 ── */
-.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-8px);background:var(--card);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:all .25s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4);pointer-events:none;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast {
+  position: fixed; top: calc(env(safe-area-inset-top,0px) + 70px);
+  left: 50%; transform: translateX(-50%) translateY(-10px);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 10px 20px; font-size: 13px; font-weight: 600;
+  z-index: 300; opacity: 0; transition: all .3s; white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── 날짜 구분 ── */
+.date-divider {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: .5px; padding: 6px 0 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.date-divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+/* select arrow */
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none; font-size: 12px;
+}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- 헤더 -->
-  <header class="hdr">
-    <div class="hdr-top">
-      <div class="logo">🏦 찬진 가계부</div>
-      <div class="hdr-right">
-        <div class="mnav">
-          <button class="mbtn" onclick="changeMonth(-1)">‹</button>
-          <span class="mlbl" id="mlbl"></span>
-          <button class="mbtn" onclick="changeMonth(1)">›</button>
-        </div>
-        <button class="sync-btn" id="sync-btn" onclick="openModal('share')">
-          <span class="sync-dot"></span><span id="sync-label">공유</span>
-        </button>
+<!-- 상단 헤더 -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="app-title">🏦 우리 가족 가계부</div>
+    <div class="month-nav">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+  <nav class="tab-bar">
+    <button class="tab-item active" onclick="switchTab('home',this)">
+      <span class="tab-icon">🏠</span>홈
+    </button>
+    <button class="tab-item" onclick="switchTab('tx',this)">
+      <span class="tab-icon">📋</span>거래
+    </button>
+    <button class="tab-item" onclick="switchTab('asset',this)">
+      <span class="tab-icon">💰</span>자산
+    </button>
+    <button class="tab-item" onclick="switchTab('dash',this)">
+      <span class="tab-icon">📊</span>대시보드
+    </button>
+  </nav>
+</header>
+
+<div class="scroll-area">
+
+  <!-- ═══ 홈 뷰 ═══ -->
+  <div id="view-home" class="view active">
+    <!-- 이번달 요약 -->
+    <div class="summary-row">
+      <div class="sum-card">
+        <div class="sum-label">수입</div>
+        <div class="sum-value income" id="h-income">₩0</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">지출</div>
+        <div class="sum-value expense" id="h-expense">₩0</div>
+      </div>
+      <div class="sum-card full">
+        <div class="sum-label">잔액</div>
+        <div class="sum-value balance" id="h-balance">₩0</div>
+        <div class="sum-sub" id="h-saving"></div>
       </div>
     </div>
-    <nav class="tabs">
-      <button class="tab on" onclick="switchTab('home',this)"><span class="tab-ico">🏠</span>홈</button>
-      <button class="tab"    onclick="switchTab('tx',this)"><span class="tab-ico">📋</span>거래</button>
-      <button class="tab"    onclick="switchTab('asset',this)"><span class="tab-ico">💰</span>자산</button>
-      <button class="tab"    onclick="switchTab('dash',this)"><span class="tab-ico">📊</span>대시보드</button>
-    </nav>
-  </header>
 
-  <!-- 뷰 -->
-  <div class="scroll">
-    <div id="view-home" class="view"></div>
-    <div id="view-tx"   class="view" style="display:none"></div>
-    <div id="view-asset" class="view" style="display:none"></div>
-    <div id="view-dash" class="view" style="display:none"></div>
+    <!-- 지출자별 -->
+    <div class="owner-row">
+      <div class="owner-card wife">
+        <div class="owner-name">👩 와이프</div>
+        <div class="owner-amount" id="h-wife">₩0</div>
+      </div>
+      <div class="owner-card husb">
+        <div class="owner-name">👨 남편</div>
+        <div class="owner-amount" id="h-husb">₩0</div>
+      </div>
+      <div class="owner-card joint">
+        <div class="owner-name">🤝 공동</div>
+        <div class="owner-amount" id="h-joint">₩0</div>
+      </div>
+    </div>
+
+    <div class="section-title">최근 거래</div>
+    <div class="tx-list" id="home-tx-list"></div>
   </div>
 
-</div><!-- /app -->
+  <!-- ═══ 거래 뷰 ═══ -->
+  <div id="view-tx" class="view">
+    <div class="section-title">이번달 거래내역</div>
+    <div class="tx-list" id="tx-list"></div>
+  </div>
+
+  <!-- ═══ 자산 뷰 ═══ -->
+  <div id="view-asset" class="view">
+    <div class="summary-row">
+      <div class="sum-card">
+        <div class="sum-label">총 자산</div>
+        <div class="sum-value income" id="a-total">₩0</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">총 손익</div>
+        <div class="sum-value" id="a-pnl">₩0</div>
+      </div>
+    </div>
+    <!-- 보유자별 -->
+    <div class="owner-row">
+      <div class="owner-card wife">
+        <div class="owner-name">👩 와이프</div>
+        <div class="owner-amount" id="a-wife">₩0</div>
+      </div>
+      <div class="owner-card husb">
+        <div class="owner-name">👨 남편</div>
+        <div class="owner-amount" id="a-husb">₩0</div>
+      </div>
+      <div class="owner-card joint">
+        <div class="owner-name">🤝 공동</div>
+        <div class="owner-amount" id="a-joint">₩0</div>
+      </div>
+    </div>
+    <div id="asset-sections"></div>
+  </div>
+
+  <!-- ═══ 대시보드 뷰 ═══ -->
+  <div id="view-dash" class="view">
+    <div class="dash-section">
+      <div class="section-title">지출자별 분석</div>
+      <div class="dash-grid">
+        <div class="dash-card" style="border-top:2px solid var(--wife)">
+          <div class="dash-card-label">👩 와이프 지출</div>
+          <div class="dash-card-value" id="d-wife-exp" style="color:var(--wife)">₩0</div>
+        </div>
+        <div class="dash-card" style="border-top:2px solid var(--husb)">
+          <div class="dash-card-label">👨 남편 지출</div>
+          <div class="dash-card-value" id="d-husb-exp" style="color:var(--husb)">₩0</div>
+        </div>
+        <div class="dash-card wide" style="border-top:2px solid var(--joint)">
+          <div class="dash-card-label">🤝 공동 지출</div>
+          <div class="dash-card-value" id="d-joint-exp" style="color:var(--joint)">₩0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <div class="section-title">카테고리별 지출</div>
+      <div id="cat-breakdown"></div>
+    </div>
+
+    <div class="dash-section">
+      <div class="section-title">고정비 vs 변동비</div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-card-label">📌 고정지출</div>
+          <div class="dash-card-value" id="d-fixed" style="color:var(--fixed)">₩0</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-label">📈 변동지출</div>
+          <div class="dash-card-value" id="d-variable" style="color:var(--expense)">₩0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <div class="section-title">보유자별 자산</div>
+      <div class="dash-grid">
+        <div class="dash-card" style="border-top:2px solid var(--wife)">
+          <div class="dash-card-label">👩 와이프</div>
+          <div class="dash-card-value" id="d-wife-asset" style="color:var(--wife)">₩0</div>
+        </div>
+        <div class="dash-card" style="border-top:2px solid var(--husb)">
+          <div class="dash-card-label">👨 남편</div>
+          <div class="dash-card-value" id="d-husb-asset" style="color:var(--husb)">₩0</div>
+        </div>
+        <div class="dash-card wide" style="border-top:2px solid var(--joint)">
+          <div class="dash-card-label">🤝 공동</div>
+          <div class="dash-card-value" id="d-joint-asset" style="color:var(--joint)">₩0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- ── 하단 탭바 ── -->
+<nav class="bottom-nav">
+  <!-- (탭은 헤더에 포함) -->
+</nav>
 
 <!-- FAB -->
-<button class="fab" id="fab" onclick="openFab()">＋</button>
+<button class="fab" onclick="openModal('tx')" title="거래 추가">＋</button>
 
-<!-- 싱크 인디케이터 -->
-<div class="syncing" id="syncing"><span class="spin">⟳</span> 동기화 중...</div>
+<!-- ══ 거래 입력 모달 ══ -->
+<div class="modal-backdrop" id="modal-tx" onclick="closeModalOnBack(event,'modal-tx')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">거래 추가</div>
 
-<!-- 거래 모달 -->
-<div class="mback" id="modal-tx" onclick="closeOnBack(event,'modal-tx')">
-  <div class="mbox">
-    <div class="mhandle"></div>
-    <div class="modal-hdr"><div class="mtitle">거래 추가</div><button class="close-btn" onclick="document.getElementById('modal-tx').classList.remove('open')">✕</button></div>
-    <label class="flbl">거래 유형</label>
-    <div class="trow">
-      <button class="tbtn on inc" data-type="income"   onclick="selType('income',this)">💚 수입</button>
-      <button class="tbtn fix"    data-type="fixed"    onclick="selType('fixed',this)">📌 고정</button>
-      <button class="tbtn var"    data-type="variable" onclick="selType('variable',this)">📈 변동</button>
-    </div>
-    <label class="flbl">금액</label>
-    <input class="finp big" id="tx-amt" type="number" inputmode="numeric" placeholder="0" oninput="updAmt()">
-    <div class="adisplay" id="amt-disp">₩0</div>
-    <label class="flbl">내용</label>
-    <input class="finp" id="tx-name" type="text" placeholder="예: 마트 장보기">
-    <label class="flbl">카테고리</label>
-    <div class="cgrid" id="cat-grid"></div>
-    <label class="flbl">계좌 / 카드</label>
-    <div class="selwrap">
-      <select class="fsel" id="tx-acct">
-        <option>국민은행</option><option>카카오뱅크</option><option>토스뱅크</option>
-        <option>삼성카드</option><option>신한카드</option><option>현대카드</option>
-        <option>롯데카드</option><option>기타</option>
-      </select>
-    </div>
-    <label class="flbl">지출자 / 수령자</label>
-    <div class="osel" id="owner-sel">
-      <button class="obtn on wife" data-o="와이프" onclick="selOwner('와이프',this,'owner-sel')">👩 와이프</button>
-      <button class="obtn husb"    data-o="남편"   onclick="selOwner('남편',this,'owner-sel')">👨 남편</button>
-      <button class="obtn joint"   data-o="공동"   onclick="selOwner('공동',this,'owner-sel')">🤝 공동</button>
-    </div>
-    <label class="flbl">날짜</label>
-    <input class="finp" id="tx-date" type="date">
-    <label class="flbl">메모 (선택)</label>
-    <input class="finp" id="tx-memo" type="text" placeholder="메모">
-    <button class="savebtn" onclick="saveTx()">저장하기</button>
-  </div>
-</div>
-
-<!-- 자산 모달 -->
-<div class="mback" id="modal-asset" onclick="closeOnBack(event,'modal-asset')">
-  <div class="mbox">
-    <div class="mhandle"></div>
-    <div class="modal-hdr"><div class="mtitle">자산 추가</div><button class="close-btn" onclick="document.getElementById('modal-asset').classList.remove('open')">✕</button></div>
-    <label class="flbl">자산 유형</label>
-    <div class="selwrap">
-      <select class="fsel" id="a-type">
-        <option>예·적금</option><option>주식</option><option>코인</option>
-        <option>부동산</option><option>현금</option><option>달러(USD)</option><option>기타자산</option>
-      </select>
-    </div>
-    <label class="flbl">항목명</label>
-    <input class="finp" id="a-name" type="text" placeholder="예: KB 정기예금">
-    <label class="flbl">금융기관 / 거래소</label>
-    <input class="finp" id="a-inst" type="text" placeholder="예: 국민은행, 업비트">
-    <label class="flbl">매입가 (₩)</label>
-    <input class="finp big" id="a-buy" type="number" inputmode="numeric" placeholder="0">
-    <label class="flbl">현재가 (₩)</label>
-    <input class="finp big" id="a-cur" type="number" inputmode="numeric" placeholder="0">
-    <label class="flbl">보유자</label>
-    <div class="osel" id="aowner-sel">
-      <button class="obtn on wife" data-o="와이프" onclick="selOwner('와이프',this,'aowner-sel')">👩 와이프</button>
-      <button class="obtn husb"    data-o="남편"   onclick="selOwner('남편',this,'aowner-sel')">👨 남편</button>
-      <button class="obtn joint"   data-o="공동"   onclick="selOwner('공동',this,'aowner-sel')">🤝 공동</button>
-    </div>
-    <label class="flbl">메모</label>
-    <input class="finp" id="a-memo" type="text" placeholder="예: 100주, 0.035 BTC">
-    <button class="savebtn" onclick="saveAsset()">저장하기</button>
-  </div>
-</div>
-
-<!-- 공유 모달 -->
-<div class="mback" id="modal-share" onclick="closeOnBack(event,'modal-share')">
-  <div class="mbox">
-    <div class="mhandle"></div>
-    <div class="modal-hdr"><div class="mtitle">📡 실시간 공유</div><button class="close-btn" onclick="document.getElementById('modal-share').classList.remove('open')">✕</button></div>
-
-    <!-- 연결 상태 -->
-    <div class="sync-status" id="sync-status-box">
-      <div class="sync-status-icon">🔗</div>
-      <div class="sync-status-text" id="sync-status-text">연결되지 않음</div>
-      <div class="sync-status-sub" id="sync-status-sub">아래에서 공유 코드를 만들거나 입력하세요</div>
+    <!-- 유형 선택 -->
+    <div class="form-label">거래 유형</div>
+    <div class="type-toggle" id="type-toggle">
+      <button class="toggle-btn active income-t" data-type="income"  onclick="selectType('income')">💚 수입</button>
+      <button class="toggle-btn fixed"           data-type="fixed"   onclick="selectType('fixed')">📌 고정지출</button>
+      <button class="toggle-btn variable"        data-type="variable" onclick="selectType('variable')">📈 변동지출</button>
     </div>
 
-    <div class="divider"></div>
-
-    <!-- 내 코드 -->
-    <div class="share-section">
-      <div class="share-section-title">내 공유 코드</div>
-      <div class="code-display">
-        <div class="code-text" id="my-code">----</div>
-        <div class="code-hint">이 코드를 남편에게 알려주세요</div>
-      </div>
-      <button class="copy-btn" onclick="copyCode()">📋 코드 복사하기</button>
+    <!-- 금액 -->
+    <div class="form-group">
+      <label class="form-label">금액</label>
+      <input class="form-input amount-input" id="tx-amount" type="number" inputmode="numeric"
+        placeholder="0" oninput="updateAmountDisplay()">
+      <div class="amount-display" id="amount-display">₩0</div>
     </div>
 
-    <!-- 코드 입력 -->
-    <div class="share-section">
-      <div class="share-section-title">상대방 코드 입력</div>
-      <div class="join-row">
-        <input class="join-input" id="join-code" type="text" maxlength="8" placeholder="ABCD1234" oninput="this.value=this.value.toUpperCase()">
-        <button class="join-btn" onclick="joinCode()">연결</button>
+    <!-- 내용 -->
+    <div class="form-group">
+      <label class="form-label">내용</label>
+      <input class="form-input" id="tx-name" type="text" placeholder="예: 마트 장보기">
+    </div>
+
+    <!-- 카테고리 -->
+    <div class="form-label">카테고리</div>
+    <div class="cat-grid" id="cat-grid"></div>
+
+    <!-- 계좌/카드 -->
+    <div class="form-group">
+      <label class="form-label">계좌 / 카드</label>
+      <div class="select-wrap">
+        <select class="form-select" id="tx-account">
+          <option value="국민은행">국민은행</option>
+          <option value="카카오뱅크">카카오뱅크</option>
+          <option value="토스뱅크">토스뱅크</option>
+          <option value="삼성카드">삼성카드</option>
+          <option value="신한카드">신한카드</option>
+          <option value="현대카드">현대카드</option>
+          <option value="롯데카드">롯데카드</option>
+          <option value="기타">기타</option>
+        </select>
       </div>
     </div>
 
-    <button class="unlink-btn" id="unlink-btn" onclick="unlinkSync()" style="display:none;width:100%">🔌 연결 해제</button>
+    <!-- 지출자 -->
+    <div class="form-label">지출자 / 수령자</div>
+    <div class="owner-select-row" id="owner-select">
+      <button class="owner-btn active wife" data-owner="와이프" onclick="selectOwner('와이프')">👩 와이프</button>
+      <button class="owner-btn husb"        data-owner="남편"   onclick="selectOwner('남편')">👨 남편</button>
+      <button class="owner-btn joint"       data-owner="공동"   onclick="selectOwner('공동')">🤝 공동</button>
+    </div>
+
+    <!-- 날짜 -->
+    <div class="form-group">
+      <label class="form-label">날짜</label>
+      <input class="form-input" id="tx-date" type="date">
+    </div>
+
+    <!-- 메모 -->
+    <div class="form-group">
+      <label class="form-label">메모 (선택)</label>
+      <input class="form-input" id="tx-memo" type="text" placeholder="메모를 입력하세요">
+    </div>
+
+    <button class="save-btn" onclick="saveTx()">저장하기</button>
+  </div>
+</div>
+
+<!-- ══ 자산 입력 모달 ══ -->
+<div class="modal-backdrop" id="modal-asset" onclick="closeModalOnBack(event,'modal-asset')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">자산 추가</div>
+
+    <div class="form-group">
+      <label class="form-label">자산 유형</label>
+      <div class="select-wrap">
+        <select class="form-select" id="a-type">
+          <option value="예·적금">💳 예·적금</option>
+          <option value="주식">📈 주식</option>
+          <option value="코인">🪙 코인</option>
+          <option value="부동산">🏠 부동산</option>
+          <option value="현금">💵 현금</option>
+          <option value="달러(USD)">💲 달러(USD)</option>
+          <option value="기타자산">📦 기타자산</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">세부 항목명</label>
+      <input class="form-input" id="a-name" type="text" placeholder="예: KB 정기예금">
+    </div>
+    <div class="form-group">
+      <label class="form-label">금융기관 / 거래소</label>
+      <input class="form-input" id="a-inst" type="text" placeholder="예: 국민은행, 업비트">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">매입가 (₩)</label>
+      <input class="form-input amount-input" id="a-buy" type="number" inputmode="numeric" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">현재가 (₩)</label>
+      <input class="form-input amount-input" id="a-cur" type="number" inputmode="numeric" placeholder="0">
+    </div>
+
+    <div class="form-label">보유자</div>
+    <div class="owner-select-row" id="asset-owner-select">
+      <button class="owner-btn active wife" data-owner="와이프" onclick="selectAssetOwner('와이프')">👩 와이프</button>
+      <button class="owner-btn husb"        data-owner="남편"   onclick="selectAssetOwner('남편')">👨 남편</button>
+      <button class="owner-btn joint"       data-owner="공동"   onclick="selectAssetOwner('공동')">🤝 공동</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <input class="form-input" id="a-memo" type="text" placeholder="예: 100주, 0.035 BTC">
+    </div>
+
+    <button class="save-btn" onclick="saveAsset()">저장하기</button>
   </div>
 </div>
 
@@ -350,556 +680,494 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════
-// 상수
-// ════════════════════════════════════════════
-const CATS = {
-  income:   [{id:"급여",e:"💼"},{id:"부업",e:"💻"},{id:"이자",e:"🏦"},{id:"기타수입",e:"✨"}],
-  fixed:    [{id:"주거비",e:"🏠"},{id:"통신비",e:"📱"},{id:"보험",e:"🛡️"},{id:"구독",e:"📺"},{id:"교육비",e:"📚"},{id:"교통정기",e:"🚇"}],
-  variable: [{id:"식비",e:"🛒"},{id:"외식",e:"🍽️"},{id:"카페",e:"☕"},{id:"교통",e:"🚌"},{id:"쇼핑",e:"🛍️"},{id:"의료",e:"💊"},{id:"여가",e:"🎮"},{id:"기타",e:"📦"}],
+// ══════════════════════════════════════════════
+// 데이터 레이어 (localStorage)
+// ══════════════════════════════════════════════
+const DB = {
+  get: (k, def=[]) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+  set: (k, v)      => localStorage.setItem(k, JSON.stringify(v)),
 };
-const CAT_EMOJI = Object.fromEntries(Object.values(CATS).flat().map(c=>[c.id,c.e]));
-const ASSET_COLOR = {"예·적금":"#3b82f6","주식":"#22c55e","코인":"#f97316","부동산":"#a855f7","현금":"#94a3b8","달러(USD)":"#34d399","기타자산":"#64748b"};
-const ASSET_EMOJI = {"예·적금":"💳","주식":"📈","코인":"🪙","부동산":"🏠","현금":"💵","달러(USD)":"💲","기타자산":"📦"};
-const OWNERS = [{id:"와이프",cls:"wife"},{id:"남편",cls:"husb"},{id:"공동",cls:"joint"}];
-const OWNER_ICON = {"와이프":"👩","남편":"👨","공동":"🤝"};
 
-// ════════════════════════════════════════════
+let txList    = DB.get('kakeibo_tx',    []);
+let assetList = DB.get('kakeibo_asset', []);
+
+function saveTxDB()    { DB.set('kakeibo_tx',    txList); }
+function saveAssetDB() { DB.set('kakeibo_asset', assetList); }
+
+// ══════════════════════════════════════════════
 // 상태
-// ════════════════════════════════════════════
-let txList   = load("kk_tx", []);
-let assList  = load("kk_as", []);
-let curYear  = new Date().getFullYear();
-let curMonth = new Date().getMonth();
-let curTab   = "home";
-let selTxType  = "income";
-let selTxOwner = "와이프";
-let selACat    = "급여";
-let selAOwner  = "와이프";
+// ══════════════════════════════════════════════
+const today = new Date();
+let curYear  = today.getFullYear();
+let curMonth = today.getMonth(); // 0-indexed
 
-// 공유 관련
-let myCode    = load("kk_mycode", null);
-let pairCode  = load("kk_paircode", null);
-let lastSync  = load("kk_lastsync", 0);
-let syncTimer = null;
+let selType   = 'income';
+let selOwner  = '와이프';
+let selAssetOwner = '와이프';
+let selCat    = '';
 
-// ════════════════════════════════════════════
-// 스토리지
-// ════════════════════════════════════════════
-function load(k, def) { try { const v=localStorage.getItem(k); return v?JSON.parse(v):def; } catch { return def; } }
-function save(k, v)   { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} }
-function saveAll()    { save("kk_tx",txList); save("kk_as",assList); }
+// ══════════════════════════════════════════════
+// 카테고리 정의
+// ══════════════════════════════════════════════
+const CATS = {
+  income:   [
+    {id:'급여',   emoji:'💼'}, {id:'부업',   emoji:'💻'},
+    {id:'이자',   emoji:'🏦'}, {id:'기타수입',emoji:'✨'},
+  ],
+  fixed:    [
+    {id:'주거비', emoji:'🏠'}, {id:'통신비', emoji:'📱'},
+    {id:'보험',   emoji:'🛡️'}, {id:'구독',   emoji:'📺'},
+    {id:'교육비', emoji:'📚'}, {id:'교통정기',emoji:'🚇'},
+  ],
+  variable: [
+    {id:'식비',   emoji:'🛒'}, {id:'외식',   emoji:'🍽️'},
+    {id:'카페',   emoji:'☕'}, {id:'교통',   emoji:'🚌'},
+    {id:'쇼핑',   emoji:'🛍️'}, {id:'의료',   emoji:'💊'},
+    {id:'여가',   emoji:'🎮'}, {id:'기타',   emoji:'📦'},
+  ],
+};
 
-// ════════════════════════════════════════════
-// 공유 코드 시스템 (jsonbin.io 무료 API 사용)
-// ════════════════════════════════════════════
-const BIN_API = "https://api.jsonbin.io/v3/b";
-// 무료 마스터 키 — 개인 프로젝트용
-const BIN_KEY = "$2a$10$placeholder"; // 아래 init에서 실제 bin 생성
+const CAT_EMOJI = {};
+Object.values(CATS).flat().forEach(c => CAT_EMOJI[c.id] = c.emoji);
 
-function genCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:8}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
-}
+const ASSET_COLORS = {
+  '예·적금':'#3b82f6','주식':'#22c55e','코인':'#f97316',
+  '부동산':'#a855f7','현금':'#94a3b8','달러(USD)':'#34d399','기타자산':'#64748b',
+};
 
-// jsonbin 대신 localStorage 기반 + BroadcastChannel 로 같은 기기 탭 동기화
-// + URL 파라미터 공유 방식으로 구현
-function initSync() {
-  if (!myCode) {
-    myCode = genCode();
-    save("kk_mycode", myCode);
-  }
-  document.getElementById("my-code").textContent = myCode;
-  updateSyncUI();
-
-  // BroadcastChannel — 같은 origin 다른 탭과 실시간 동기화
-  if (typeof BroadcastChannel !== "undefined") {
-    const bc = new BroadcastChannel("kakeibo_sync");
-    bc.onmessage = (e) => {
-      if (e.data.type === "DATA_UPDATE" && e.data.code === (pairCode||myCode)) {
-        txList  = e.data.txList;
-        assList = e.data.assList;
-        saveAll();
-        render();
-        showToast("🔄 데이터 업데이트됨!");
-      }
-    };
-    window._bc = bc;
-  }
-
-  // URL 기반 공유 — ?pair=CODE 로 접속 시 자동 연결
-  const params = new URLSearchParams(location.search);
-  if (params.get("pair") && !pairCode) {
-    const code = params.get("pair").toUpperCase();
-    if (code !== myCode) {
-      pairCode = code;
-      save("kk_paircode", pairCode);
-      updateSyncUI();
-      showToast("🔗 공유 연결됨!");
-    }
-  }
-
-  // 주기적 동기화 (같은 GitHub Pages URL 접속자끼리)
-  startSyncPoll();
-}
-
-function startSyncPoll() {
-  if (syncTimer) clearInterval(syncTimer);
-  if (!pairCode) return;
-  syncTimer = setInterval(pollSync, 15000); // 15초마다
-  pollSync();
-}
-
-// GitHub Gist 기반 동기화 (무료, 익명 가능)
-async function pushData() {
-  if (!pairCode && !myCode) return;
-  const code = pairCode || myCode;
-  const data = { txList, assList, ts: Date.now(), code };
-
-  try {
-    // localStorage를 공유 저장소로 활용 (같은 origin)
-    save(`kk_shared_${code}`, data);
-    // BroadcastChannel으로 다른 탭에 알림
-    if (window._bc) {
-      window._bc.postMessage({ type:"DATA_UPDATE", code, txList, assList });
-    }
-  } catch(e) {}
-}
-
-async function pollSync() {
-  if (!pairCode) return;
-  try {
-    showSyncing(true);
-    // 상대방이 저장한 데이터 읽기
-    const theirData = load(`kk_shared_${pairCode}`, null);
-    if (theirData && theirData.ts > lastSync) {
-      txList  = theirData.txList  || txList;
-      assList = theirData.assList || assList;
-      lastSync = theirData.ts;
-      save("kk_lastsync", lastSync);
-      saveAll();
-      render();
-      showToast("🔄 동기화 완료!");
-    }
-    showSyncing(false);
-  } catch(e) { showSyncing(false); }
-}
-
-function joinCode() {
-  const code = document.getElementById("join-code").value.trim().toUpperCase();
-  if (code.length < 4) { showToast("코드를 입력해주세요"); return; }
-  if (code === myCode) { showToast("내 코드는 입력할 수 없어요"); return; }
-  pairCode = code;
-  save("kk_paircode", pairCode);
-  updateSyncUI();
-  startSyncPoll();
-  // 내 데이터 바로 공유
-  pushData();
-  showToast("🔗 연결됐어요! 상대방도 내 코드를 입력하면 동기화돼요");
-  document.getElementById("modal-share").classList.remove("open");
-}
-
-function unlinkSync() {
-  pairCode = null;
-  save("kk_paircode", null);
-  if (syncTimer) clearInterval(syncTimer);
-  updateSyncUI();
-  showToast("연결이 해제됐어요");
-}
-
-function copyCode() {
-  navigator.clipboard?.writeText(myCode).then(()=>showToast("✅ 코드 복사됨!")).catch(()=>{
-    // fallback
-    const el = document.createElement("input");
-    el.value = myCode; document.body.appendChild(el);
-    el.select(); document.execCommand("copy"); document.body.removeChild(el);
-    showToast("✅ 코드 복사됨!");
-  });
-}
-
-function updateSyncUI() {
-  const btn   = document.getElementById("sync-btn");
-  const label = document.getElementById("sync-label");
-  const box   = document.getElementById("sync-status-box");
-  const text  = document.getElementById("sync-status-text");
-  const sub   = document.getElementById("sync-status-sub");
-  const unlink= document.getElementById("unlink-btn");
-
-  if (pairCode) {
-    btn.classList.add("linked");
-    label.textContent = "연결됨";
-    box.classList.add("linked");
-    document.querySelector(".sync-status-icon").textContent = "✅";
-    text.textContent = "연결됨";
-    sub.textContent = `상대 코드: ${pairCode}`;
-    unlink.style.display = "block";
-  } else {
-    btn.classList.remove("linked");
-    label.textContent = "공유";
-    box.classList.remove("linked");
-    document.querySelector(".sync-status-icon").textContent = "🔗";
-    text.textContent = "연결되지 않음";
-    sub.textContent = "아래에서 공유 코드를 만들거나 입력하세요";
-    unlink.style.display = "none";
-  }
-}
-
-function showSyncing(on) {
-  document.getElementById("syncing").classList.toggle("show", on);
-}
-
-// ════════════════════════════════════════════
-// 유틸
-// ════════════════════════════════════════════
-const won = n => "₩"+Math.abs(Math.round(n)).toLocaleString("ko-KR");
-const compact = n => { const a=Math.abs(n); if(a>=100000000) return (n/100000000).toFixed(1)+"억"; if(a>=10000) return Math.round(n/10000)+"만"; return n.toLocaleString("ko-KR"); };
-const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
-const todayStr = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
-const monthTx = () => txList.filter(t=>{ const d=new Date(t.date); return d.getFullYear()===curYear && d.getMonth()===curMonth; });
-
-// ════════════════════════════════════════════
-// 탭 & 월
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 탭 & 월 네비
+// ══════════════════════════════════════════════
 function switchTab(name, el) {
-  curTab = name;
-  document.querySelectorAll(".view").forEach(v=>v.style.display="none");
-  document.getElementById("view-"+name).style.display="block";
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
-  el.classList.add("on");
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  el.classList.add('active');
+
+  // 자산 탭에서 FAB 변경
+  const fab = document.querySelector('.fab');
+  if (name === 'asset') {
+    fab.onclick = () => openModal('asset');
+    fab.title = '자산 추가';
+  } else {
+    fab.onclick = () => openModal('tx');
+    fab.title = '거래 추가';
+  }
   render();
 }
 
 function changeMonth(d) {
   curMonth += d;
-  if (curMonth<0) { curMonth=11; curYear--; }
-  if (curMonth>11){ curMonth=0;  curYear++; }
-  document.getElementById("mlbl").textContent = `${curYear}.${String(curMonth+1).padStart(2,"0")}`;
+  if (curMonth < 0)  { curMonth = 11; curYear--; }
+  if (curMonth > 11) { curMonth = 0;  curYear++; }
+  updateMonthLabel();
   render();
 }
 
-// ════════════════════════════════════════════
-// 폼 상호작용
-// ════════════════════════════════════════════
-function selType(type, el) {
-  selTxType = type;
-  document.querySelectorAll(".trow .tbtn").forEach(b=>b.classList.remove("on","inc","fix","var"));
-  el.classList.add("on", type==="income"?"inc":type==="fixed"?"fix":"var");
+function updateMonthLabel() {
+  document.getElementById('monthLabel').textContent =
+    `${curYear}.${String(curMonth+1).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════
+// 필터링
+// ══════════════════════════════════════════════
+function monthTx() {
+  return txList.filter(t => {
+    const d = new Date(t.date);
+    return d.getFullYear()===curYear && d.getMonth()===curMonth;
+  });
+}
+
+// ══════════════════════════════════════════════
+// 숫자 포맷
+// ══════════════════════════════════════════════
+const won = n => '₩' + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+const compact = n => {
+  const a = Math.abs(n);
+  if (a >= 100000000) return (n/100000000).toFixed(1) + '억';
+  if (a >= 10000)     return (n/10000).toFixed(0) + '만';
+  return n.toLocaleString('ko-KR');
+};
+
+// ══════════════════════════════════════════════
+// 렌더링 — 홈
+// ══════════════════════════════════════════════
+function renderHome() {
+  const txs = monthTx();
+  const income  = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense = txs.filter(t=>t.type!=='income').reduce((s,t)=>s+t.amount,0);
+  const balance = income - expense;
+
+  document.getElementById('h-income').textContent  = won(income);
+  document.getElementById('h-expense').textContent = won(expense);
+  document.getElementById('h-balance').textContent = won(balance);
+  document.getElementById('h-balance').style.color =
+    balance >= 0 ? 'var(--income)' : 'var(--expense)';
+
+  const saveRate = income > 0 ? ((balance/income)*100).toFixed(1) : 0;
+  document.getElementById('h-saving').textContent = `저축률 ${saveRate}%`;
+
+  ['와이프','남편','공동'].forEach((o,i) => {
+    const id = ['h-wife','h-husb','h-joint'][i];
+    const amt = txs.filter(t=>t.owner===o && t.type!=='income').reduce((s,t)=>s+t.amount,0);
+    document.getElementById(id).textContent = compact(amt);
+  });
+
+  const recent = [...txs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const el = document.getElementById('home-tx-list');
+  el.innerHTML = recent.length ? recent.map(txHTML).join('') : emptyHTML('최근 거래가 없어요');
+}
+
+// ══════════════════════════════════════════════
+// 렌더링 — 거래목록
+// ══════════════════════════════════════════════
+function renderTxList() {
+  const txs = [...monthTx()].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el  = document.getElementById('tx-list');
+  if (!txs.length) { el.innerHTML = emptyHTML('이번 달 거래가 없어요\n아래 + 버튼을 눌러 추가하세요'); return; }
+
+  // 날짜별 그룹
+  const groups = {};
+  txs.forEach(t => { (groups[t.date]??=[]).push(t); });
+
+  el.innerHTML = Object.entries(groups).sort(([a],[b])=>b.localeCompare(a))
+    .map(([date, list]) => {
+      const d = new Date(date);
+      const label = `${d.getMonth()+1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]})`;
+      return `<div class="date-divider">${label}</div>` + list.map(txHTML).join('');
+    }).join('');
+}
+
+function txHTML(t) {
+  const isIncome = t.type === 'income';
+  const typeBadge = t.type === 'income'   ? '<span class="type-badge income-t">수입</span>'
+                  : t.type === 'fixed'    ? '<span class="type-badge fixed">고정</span>'
+                  : '<span class="type-badge variable">변동</span>';
+  const ownerClass = t.owner === '와이프' ? 'wife' : t.owner === '남편' ? 'husb' : 'joint';
+  const emoji = CAT_EMOJI[t.cat] || '💸';
+  return `
+  <div class="tx-item ${ownerClass}" data-id="${t.id}">
+    <div class="tx-icon">${emoji}</div>
+    <div class="tx-info">
+      <div class="tx-name">${t.name}</div>
+      <div class="tx-meta">
+        <span class="owner-badge ${ownerClass}">${t.owner}</span>
+        ${typeBadge}
+        <span>${t.account||''}</span>
+      </div>
+    </div>
+    <div class="tx-amount ${isIncome?'income':'expense'}">
+      ${isIncome?'+':'-'}${won(t.amount)}
+    </div>
+    <button class="tx-delete" onclick="deleteTx('${t.id}',event)">✕</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// 렌더링 — 자산
+// ══════════════════════════════════════════════
+function renderAsset() {
+  const total  = assetList.reduce((s,a)=>s+a.cur,0);
+  const totBuy = assetList.reduce((s,a)=>s+a.buy,0);
+  const pnl    = total - totBuy;
+
+  document.getElementById('a-total').textContent = won(total);
+  const pnlEl = document.getElementById('a-pnl');
+  pnlEl.textContent = (pnl>=0?'+':'')+won(pnl);
+  pnlEl.style.color = pnl>=0?'var(--income)':'var(--expense)';
+
+  ['와이프','남편','공동'].forEach((o,i) => {
+    const id = ['a-wife','a-husb','a-joint'][i];
+    const amt = assetList.filter(a=>a.owner===o).reduce((s,a)=>s+a.cur,0);
+    document.getElementById(id).textContent = compact(amt);
+  });
+
+  // 유형별 섹션
+  const types = [...new Set(assetList.map(a=>a.type))];
+  const sec = document.getElementById('asset-sections');
+
+  if (!assetList.length) { sec.innerHTML = emptyHTML('자산을 추가해보세요'); return; }
+
+  sec.innerHTML = types.map(type => {
+    const items = assetList.filter(a=>a.type===type);
+    const typeTotal = items.reduce((s,a)=>s+a.cur,0);
+    const color = ASSET_COLORS[type] || '#94a3b8';
+    return `
+    <div class="asset-type-section">
+      <div class="asset-type-header">
+        <div class="asset-type-dot" style="background:${color}"></div>
+        <div class="asset-type-name">${type}</div>
+        <div class="asset-type-total">${won(typeTotal)}</div>
+      </div>
+      ${items.map(a => {
+        const pnl  = a.cur - a.buy;
+        const rate = a.buy > 0 ? ((pnl/a.buy)*100).toFixed(1) : 0;
+        const ownerClass = a.owner==='와이프'?'wife':a.owner==='남편'?'husb':'joint';
+        return `
+        <div class="asset-item">
+          <div class="asset-info">
+            <div class="asset-name">${a.name}</div>
+            <div class="asset-sub">
+              <span class="owner-badge ${ownerClass}">${a.owner}</span>
+              ${a.inst ? `· ${a.inst}` : ''}
+              ${a.memo ? `· ${a.memo}` : ''}
+            </div>
+          </div>
+          <div class="asset-values">
+            <div class="asset-cur" style="color:${color}">${won(a.cur)}</div>
+            <div class="asset-pnl ${pnl>=0?'pos':'neg'}">
+              ${pnl>=0?'+':''}${won(pnl)} (${rate}%)
+            </div>
+          </div>
+          <button class="tx-delete" onclick="deleteAsset('${a.id}',event)" style="margin-left:6px">✕</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// 렌더링 — 대시보드
+// ══════════════════════════════════════════════
+function renderDash() {
+  const txs = monthTx();
+
+  ['와이프','남편','공동'].forEach((o,i) => {
+    const id  = ['d-wife-exp','d-husb-exp','d-joint-exp'][i];
+    const amt = txs.filter(t=>t.owner===o && t.type!=='income').reduce((s,t)=>s+t.amount,0);
+    document.getElementById(id).textContent = won(amt);
+  });
+
+  const fixedAmt    = txs.filter(t=>t.type==='fixed').reduce((s,t)=>s+t.amount,0);
+  const variableAmt = txs.filter(t=>t.type==='variable').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('d-fixed').textContent    = won(fixedAmt);
+  document.getElementById('d-variable').textContent = won(variableAmt);
+
+  // 카테고리 브레이크다운
+  const catMap = {};
+  txs.filter(t=>t.type!=='income').forEach(t => {
+    catMap[t.cat] = (catMap[t.cat]||0) + t.amount;
+  });
+  const totalExp = Object.values(catMap).reduce((s,v)=>s+v,0);
+  const sorted   = Object.entries(catMap).sort(([,a],[,b])=>b-a);
+  const catEl    = document.getElementById('cat-breakdown');
+  catEl.innerHTML = sorted.length ? sorted.map(([cat, amt]) => {
+    const pct = totalExp > 0 ? (amt/totalExp*100).toFixed(0) : 0;
+    const colors = ['#f472b6','#60a5fa','#a78bfa','#34d399','#fbbf24','#f97316','#94a3b8'];
+    const color  = colors[sorted.findIndex(([c])=>c===cat) % colors.length];
+    return `
+    <div class="progress-wrap" style="margin-bottom:10px">
+      <div class="progress-label">
+        <span>${CAT_EMOJI[cat]||'📦'} ${cat}</span>
+        <span>${won(amt)} (${pct}%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  }).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">지출 내역이 없어요</div>';
+
+  // 보유자별 자산
+  ['와이프','남편','공동'].forEach((o,i) => {
+    const id  = ['d-wife-asset','d-husb-asset','d-joint-asset'][i];
+    const amt = assetList.filter(a=>a.owner===o).reduce((s,a)=>s+a.cur,0);
+    document.getElementById(id).textContent = won(amt);
+  });
+}
+
+// ══════════════════════════════════════════════
+// 전체 렌더
+// ══════════════════════════════════════════════
+function render() {
+  renderHome();
+  renderTxList();
+  renderAsset();
+  renderDash();
+}
+
+// ══════════════════════════════════════════════
+// 모달
+// ══════════════════════════════════════════════
+function openModal(type) {
+  if (type === 'tx') {
+    // 날짜 기본값
+    const d = new Date();
+    document.getElementById('tx-date').value =
+      `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    document.getElementById('tx-amount').value = '';
+    document.getElementById('tx-name').value   = '';
+    document.getElementById('tx-memo').value   = '';
+    document.getElementById('amount-display').textContent = '₩0';
+    selectType('income');
+    selectOwner('와이프');
+    document.getElementById('modal-tx').classList.add('open');
+  } else {
+    document.getElementById('a-buy').value  = '';
+    document.getElementById('a-cur').value  = '';
+    document.getElementById('a-name').value = '';
+    document.getElementById('a-inst').value = '';
+    document.getElementById('a-memo').value = '';
+    selectAssetOwner('와이프');
+    document.getElementById('modal-asset').classList.add('open');
+  }
+}
+
+function closeModalOnBack(e, id) {
+  if (e.target.classList.contains('modal-backdrop'))
+    document.getElementById(id).classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// 유형 선택
+// ══════════════════════════════════════════════
+function selectType(type) {
+  selType = type;
+  document.querySelectorAll('#type-toggle .toggle-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.type === type) b.classList.add('active');
+  });
+  // 카테고리 재렌더
   renderCatGrid();
 }
 
-function selOwner(o, el, gridId) {
-  if (gridId==="owner-sel") selTxOwner = o;
-  else selAOwner = o;
-  document.querySelectorAll(`#${gridId} .obtn`).forEach(b=>b.classList.remove("on","wife","husb","joint"));
-  const cls = o==="와이프"?"wife":o==="남편"?"husb":"joint";
-  el.classList.add("on", cls);
-}
-
 function renderCatGrid() {
-  const cats = CATS[selTxType]||[];
-  selACat = cats[0]?.id||"";
-  document.getElementById("cat-grid").innerHTML = cats.map(c=>
-    `<button class="cbtn${c.id===selACat?" on":""}" onclick="selCat('${c.id}',this)">
-      <span class="ce">${c.e}</span>${c.id}
+  const cats = CATS[selType] || [];
+  selCat = cats[0]?.id || '';
+  document.getElementById('cat-grid').innerHTML = cats.map(c =>
+    `<button class="cat-btn${c.id===selCat?' active':''}" data-cat="${c.id}" onclick="selectCat('${c.id}')">
+      <span class="cat-emoji">${c.emoji}</span>${c.id}
     </button>`
-  ).join("");
+  ).join('');
 }
 
-function selCat(id, el) {
-  selACat = id;
-  document.querySelectorAll(".cgrid .cbtn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on");
+function selectCat(id) {
+  selCat = id;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat===id);
+  });
 }
 
-function updAmt() {
-  const v = parseFloat(document.getElementById("tx-amt").value)||0;
-  document.getElementById("amt-disp").textContent = v>0?"₩"+v.toLocaleString("ko-KR"):"₩0";
+// ══════════════════════════════════════════════
+// 소유자 선택
+// ══════════════════════════════════════════════
+function selectOwner(o) {
+  selOwner = o;
+  document.querySelectorAll('#owner-select .owner-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.owner===o) b.classList.add('active');
+  });
 }
 
-// ════════════════════════════════════════════
-// 저장
-// ════════════════════════════════════════════
+function selectAssetOwner(o) {
+  selAssetOwner = o;
+  document.querySelectorAll('#asset-owner-select .owner-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.owner===o) b.classList.add('active');
+  });
+}
+
+// ══════════════════════════════════════════════
+// 금액 표시
+// ══════════════════════════════════════════════
+function updateAmountDisplay() {
+  const v = parseFloat(document.getElementById('tx-amount').value)||0;
+  document.getElementById('amount-display').textContent =
+    v > 0 ? '₩' + v.toLocaleString('ko-KR') : '₩0';
+}
+
+// ══════════════════════════════════════════════
+// 저장 — 거래
+// ══════════════════════════════════════════════
 function saveTx() {
-  const amt  = parseFloat(document.getElementById("tx-amt").value);
-  const name = document.getElementById("tx-name").value.trim();
-  if (!amt||amt<=0) { showToast("금액을 입력해주세요 💸"); return; }
-  if (!name)        { showToast("내용을 입력해주세요 ✏️"); return; }
-  txList.push({ id:uid(), type:selTxType, cat:selACat, amount:amt, name,
-    account: document.getElementById("tx-acct").value,
-    owner: selTxOwner,
-    date: document.getElementById("tx-date").value,
-    memo: document.getElementById("tx-memo").value.trim() });
-  saveAll(); pushData();
-  document.getElementById("modal-tx").classList.remove("open");
-  showToast("✅ 저장됐어요!");
-  document.getElementById("tx-amt").value="";
-  document.getElementById("tx-name").value="";
-  document.getElementById("tx-memo").value="";
+  const amount  = parseFloat(document.getElementById('tx-amount').value);
+  const name    = document.getElementById('tx-name').value.trim();
+  const account = document.getElementById('tx-account').value;
+  const date    = document.getElementById('tx-date').value;
+  const memo    = document.getElementById('tx-memo').value.trim();
+
+  if (!amount || amount <= 0) { showToast('금액을 입력해주세요 💸'); return; }
+  if (!name)                  { showToast('내용을 입력해주세요 ✏️'); return; }
+
+  txList.push({
+    id: Date.now().toString(),
+    type: selType, name, amount, cat: selCat,
+    account, owner: selOwner, date, memo,
+  });
+  saveTxDB();
+  document.getElementById('modal-tx').classList.remove('open');
+  showToast('✅ 저장됐어요!');
   render();
 }
 
+// ══════════════════════════════════════════════
+// 저장 — 자산
+// ══════════════════════════════════════════════
 function saveAsset() {
-  const cur  = parseFloat(document.getElementById("a-cur").value);
-  const name = document.getElementById("a-name").value.trim();
-  if (!name)     { showToast("항목명을 입력해주세요 ✏️"); return; }
-  if (!cur||cur<=0){ showToast("현재가를 입력해주세요 💰"); return; }
-  assList.push({ id:uid(),
-    type:  document.getElementById("a-type").value,
-    name,
-    inst:  document.getElementById("a-inst").value.trim(),
-    buy:   parseFloat(document.getElementById("a-buy").value)||0,
-    cur,
-    owner: selAOwner,
-    memo:  document.getElementById("a-memo").value.trim() });
-  saveAll(); pushData();
-  document.getElementById("modal-asset").classList.remove("open");
-  showToast("✅ 자산 추가됐어요!");
-  ["a-name","a-inst","a-buy","a-cur","a-memo"].forEach(id=>document.getElementById(id).value="");
+  const name = document.getElementById('a-name').value.trim();
+  const buy  = parseFloat(document.getElementById('a-buy').value)||0;
+  const cur  = parseFloat(document.getElementById('a-cur').value)||0;
+  const inst = document.getElementById('a-inst').value.trim();
+  const memo = document.getElementById('a-memo').value.trim();
+  const type = document.getElementById('a-type').value;
+
+  if (!name) { showToast('항목명을 입력해주세요 ✏️'); return; }
+  if (cur <= 0) { showToast('현재가를 입력해주세요 💰'); return; }
+
+  assetList.push({
+    id: Date.now().toString(),
+    type, name, inst, buy, cur, owner: selAssetOwner, memo,
+  });
+  saveAssetDB();
+  document.getElementById('modal-asset').classList.remove('open');
+  showToast('✅ 자산이 추가됐어요!');
   render();
 }
 
-function delTx(id) {
-  if (!confirm("삭제할까요?")) return;
+// ══════════════════════════════════════════════
+// 삭제
+// ══════════════════════════════════════════════
+function deleteTx(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 거래를 삭제할까요?')) return;
   txList = txList.filter(t=>t.id!==id);
-  saveAll(); pushData(); render(); showToast("🗑️ 삭제됐어요");
-}
-function delAsset(id) {
-  if (!confirm("삭제할까요?")) return;
-  assList = assList.filter(a=>a.id!==id);
-  saveAll(); pushData(); render(); showToast("🗑️ 삭제됐어요");
+  saveTxDB(); showToast('🗑️ 삭제됐어요'); render();
 }
 
-// ════════════════════════════════════════════
-// 모달
-// ════════════════════════════════════════════
-function openModal(type) {
-  if (type==="tx") {
-    document.getElementById("tx-date").value = todayStr();
-    document.getElementById("tx-amt").value  = "";
-    document.getElementById("tx-name").value = "";
-    document.getElementById("tx-memo").value = "";
-    document.getElementById("amt-disp").textContent = "₩0";
-    selTxType="income"; selTxOwner="와이프";
-    document.querySelectorAll(".trow .tbtn").forEach(b=>b.classList.remove("on","inc","fix","var"));
-    document.querySelector(".trow .tbtn").classList.add("on","inc");
-    document.querySelectorAll("#owner-sel .obtn").forEach(b=>b.classList.remove("on","wife","husb","joint"));
-    document.querySelector("#owner-sel .obtn").classList.add("on","wife");
-    renderCatGrid();
-  }
-  if (type==="asset") {
-    ["a-name","a-inst","a-buy","a-cur","a-memo"].forEach(id=>document.getElementById(id).value="");
-    selAOwner="와이프";
-    document.querySelectorAll("#aowner-sel .obtn").forEach(b=>b.classList.remove("on","wife","husb","joint"));
-    document.querySelector("#aowner-sel .obtn").classList.add("on","wife");
-  }
-  document.getElementById(`modal-${type}`).classList.add("open");
+function deleteAsset(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 자산을 삭제할까요?')) return;
+  assetList = assetList.filter(a=>a.id!==id);
+  saveAssetDB(); showToast('🗑️ 삭제됐어요'); render();
 }
 
-function openFab() { openModal(curTab==="asset"?"asset":"tx"); }
-
-function closeOnBack(e, id) {
-  if (e.target.classList.contains("mback")) document.getElementById(id).classList.remove("open");
-}
-
-function openShareModal() {
-  document.getElementById("join-code").value = "";
-  document.getElementById("modal-share").classList.add("open");
-}
-
-// ════════════════════════════════════════════
-// 렌더링
-// ════════════════════════════════════════════
-function render() {
-  const view = document.getElementById("view-"+curTab);
-  if (!view || view.style.display==="none") return;
-  const txs = monthTx();
-
-  if (curTab==="home")  renderHome(view, txs);
-  if (curTab==="tx")    renderTx(view, txs);
-  if (curTab==="asset") renderAsset(view);
-  if (curTab==="dash")  renderDash(view, txs);
-}
-
-function ownerCards(getAmt) {
-  return `<div class="orow">
-    ${OWNERS.map(o=>`
-    <div class="ocard ${o.cls}">
-      <div class="onm">${OWNER_ICON[o.id]} ${o.id}</div>
-      <div class="oamt">${compact(getAmt(o.id))}</div>
-    </div>`).join("")}
-  </div>`;
-}
-
-function txItemHTML(t) {
-  const oc = t.owner==="와이프"?"wife":t.owner==="남편"?"husb":"joint";
-  const isInc = t.type==="income";
-  return `
-  <div class="txitem ${oc}">
-    <div class="txico">${CAT_EMOJI[t.cat]||"💸"}</div>
-    <div class="txinfo">
-      <div class="txname">${t.name}</div>
-      <div class="txmeta">
-        <span class="badge ${oc}">${t.owner}</span>
-        <span class="tbadge ${t.type}">${isInc?"수입":t.type==="fixed"?"고정":"변동"}</span>
-        <span>${t.account||""}</span>
-      </div>
-    </div>
-    <div class="txamt ${isInc?"inc":"exp"}">${isInc?"+":"-"}${won(t.amount)}</div>
-    <button class="delbtn" onclick="delTx('${t.id}')">✕</button>
-  </div>`;
-}
-
-function renderHome(el, txs) {
-  const income  = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-  const expense = txs.filter(t=>t.type!=="income").reduce((s,t)=>s+t.amount,0);
-  const bal     = income-expense;
-  const rate    = income>0?((bal/income)*100).toFixed(1):"0.0";
-  const recent  = [...txs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-
-  el.innerHTML = `
-  <div class="srow">
-    <div class="scard"><div class="slbl">💚 수입</div><div class="sval" style="color:var(--income)">${won(income)}</div></div>
-    <div class="scard"><div class="slbl">💸 지출</div><div class="sval" style="color:var(--expense)">${won(expense)}</div></div>
-    <div class="scard full">
-      <div class="slbl">🏦 잔액</div>
-      <div class="sval" style="color:${bal>=0?"var(--income)":"var(--expense)"}">${won(bal)}</div>
-      <div class="ssub">저축률 ${rate}%</div>
-    </div>
-  </div>
-  ${ownerCards(o=>txs.filter(t=>t.owner===o&&t.type!=="income").reduce((s,t)=>s+t.amount,0))}
-  <div class="stitle">최근 거래</div>
-  <div class="txlist">${recent.length ? recent.map(txItemHTML).join("") :
-    `<div class="empty"><div class="emico">📭</div><div class="emtxt">최근 거래가 없어요\n+ 버튼으로 추가하세요</div></div>`}
-  </div>`;
-}
-
-function renderTx(el, txs) {
-  const sorted = [...txs].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const groups = sorted.reduce((acc,t)=>{ (acc[t.date]??=[]).push(t); return acc; },{});
-  const DAY = ["일","월","화","수","목","금","토"];
-
-  el.innerHTML = `<div class="stitle">이번달 거래 (${txs.length}건)</div>
-  <div class="txlist">${sorted.length ?
-    Object.entries(groups).sort(([a],[b])=>b.localeCompare(a)).map(([date,list])=>{
-      const d=new Date(date);
-      return `<div class="ddiv">${d.getMonth()+1}월 ${d.getDate()}일 (${DAY[d.getDay()]})</div>`+list.map(txItemHTML).join("");
-    }).join("") :
-    `<div class="empty"><div class="emico">📋</div><div class="emtxt">거래 내역이 없어요</div></div>`
-  }</div>`;
-}
-
-function renderAsset(el) {
-  const totalAss = assList.reduce((s,a)=>s+a.cur,0);
-  const totalPnl = totalAss - assList.reduce((s,a)=>s+a.buy,0);
-  const types = [...new Set(assList.map(a=>a.type))];
-
-  el.innerHTML = `
-  <div class="srow">
-    <div class="scard"><div class="slbl">💎 총 자산</div><div class="sval" style="color:var(--income)">${won(totalAss)}</div></div>
-    <div class="scard"><div class="slbl">📈 총 손익</div><div class="sval" style="color:${totalPnl>=0?"var(--income)":"var(--expense)"}">${totalPnl>=0?"+":""}${won(totalPnl)}</div></div>
-  </div>
-  ${ownerCards(o=>assList.filter(a=>a.owner===o).reduce((s,a)=>s+a.cur,0))}
-  ${types.length ? types.map(type=>{
-    const items = assList.filter(a=>a.type===type);
-    const tot   = items.reduce((s,a)=>s+a.cur,0);
-    const color = ASSET_COLOR[type]||"#94a3b8";
-    return `
-    <div class="asec">
-      <div class="asec-hdr">
-        <div class="adot" style="background:${color}"></div>
-        <div class="atnm">${ASSET_EMOJI[type]||""} ${type}</div>
-        <div class="attot">${won(tot)}</div>
-      </div>
-      ${items.map(a=>{
-        const pnl=a.cur-a.buy, rate=a.buy>0?((pnl/a.buy)*100).toFixed(1):0;
-        const oc=a.owner==="와이프"?"wife":a.owner==="남편"?"husb":"joint";
-        return `
-        <div class="aitem">
-          <div class="ainf">
-            <div class="anm">${a.name}</div>
-            <div class="asub"><span class="badge ${oc}">${a.owner}</span>${a.inst?`<span>· ${a.inst}</span>`:""}${a.memo?`<span>· ${a.memo}</span>`:""}</div>
-          </div>
-          <div class="avals">
-            <div class="acur" style="color:${color}">${won(a.cur)}</div>
-            <div class="apnl ${pnl>=0?"pos":"neg"}">${pnl>=0?"+":""}${won(pnl)} (${rate}%)</div>
-          </div>
-          <button class="delbtn" style="margin-left:6px" onclick="delAsset('${a.id}')">✕</button>
-        </div>`;
-      }).join("")}
-    </div>`;
-  }).join("") : `<div class="empty"><div class="emico">💰</div><div class="emtxt">자산을 추가해보세요\n+ 버튼으로 추가하세요</div></div>`}`;
-}
-
-function renderDash(el, txs) {
-  const catMap={};
-  txs.filter(t=>t.type!=="income").forEach(t=>{ catMap[t.cat]=(catMap[t.cat]||0)+t.amount; });
-  const totalExp2 = Object.values(catMap).reduce((s,v)=>s+v,0);
-  const sorted    = Object.entries(catMap).sort(([,a],[,b])=>b-a);
-  const colors    = ["#f472b6","#60a5fa","#a78bfa","#34d399","#fbbf24","#f97316","#94a3b8","#22d3ee"];
-  const fixedAmt  = txs.filter(t=>t.type==="fixed").reduce((s,t)=>s+t.amount,0);
-  const varAmt    = txs.filter(t=>t.type==="variable").reduce((s,t)=>s+t.amount,0);
-  const OC = {"와이프":"var(--wife)","남편":"var(--husb)","공동":"var(--joint)"};
-  const OB = {"와이프":"var(--wife)","남편":"var(--husb)","공동":"var(--joint)"};
-
-  el.innerHTML = `
-  <div class="stitle">지출자별 분석</div>
-  <div class="dgrid">
-    ${OWNERS.map((o,i)=>`
-    <div class="dcard${i===2?" wide":""}" style="border-top:2px solid ${OB[o.id]}">
-      <div class="dlbl">${OWNER_ICON[o.id]} ${o.id} 지출</div>
-      <div class="dval" style="color:${OC[o.id]}">${won(txs.filter(t=>t.owner===o.id&&t.type!=="income").reduce((s,t)=>s+t.amount,0))}</div>
-    </div>`).join("")}
-  </div>
-
-  <div class="stitle">카테고리별 지출</div>
-  ${sorted.length ? sorted.map(([cat,amt],i)=>{
-    const pct=totalExp2>0?(amt/totalExp2*100).toFixed(0):0;
-    return `
-    <div class="pbar-wrap">
-      <div class="pbar-lbl"><span>${CAT_EMOJI[cat]||"📦"} ${cat}</span><span>${won(amt)} (${pct}%)</span></div>
-      <div class="pbar"><div class="pfill" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
-    </div>`;
-  }).join("") : `<div style="color:var(--muted);font-size:13px;padding:6px 0">지출 내역이 없어요</div>`}
-
-  <div class="stitle" style="margin-top:18px">고정비 vs 변동비</div>
-  <div class="dgrid">
-    <div class="dcard" style="border-top:2px solid var(--fixed)"><div class="dlbl">📌 고정지출</div><div class="dval" style="color:var(--fixed)">${won(fixedAmt)}</div></div>
-    <div class="dcard" style="border-top:2px solid var(--expense)"><div class="dlbl">📈 변동지출</div><div class="dval" style="color:var(--expense)">${won(varAmt)}</div></div>
-  </div>
-
-  <div class="stitle">보유자별 자산</div>
-  <div class="dgrid">
-    ${OWNERS.map((o,i)=>`
-    <div class="dcard${i===2?" wide":""}" style="border-top:2px solid ${OB[o.id]}">
-      <div class="dlbl">${OWNER_ICON[o.id]} ${o.id} 자산</div>
-      <div class="dval" style="color:${OC[o.id]}">${won(assList.filter(a=>a.owner===o.id).reduce((s,a)=>s+a.cur,0))}</div>
-    </div>`).join("")}
-  </div>`;
-}
-
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // 토스트
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════════
 function showToast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent=msg; el.classList.add("show");
-  setTimeout(()=>el.classList.remove("show"), 2200);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 빈 상태 HTML
+// ══════════════════════════════════════════════
+function emptyHTML(msg) {
+  return `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${msg}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
 // 초기화
-// ════════════════════════════════════════════
-document.getElementById("mlbl").textContent = `${curYear}.${String(curMonth+1).padStart(2,"0")}`;
-
-// 공유 버튼에 openShareModal 연결
-document.getElementById("sync-btn").onclick = openShareModal;
-
+// ══════════════════════════════════════════════
+updateMonthLabel();
 renderCatGrid();
-initSync();
 render();
 
-// 앱 포그라운드 복귀 시 동기화
-document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && pairCode) pollSync(); });
+// PWA 서비스워커 등록
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
