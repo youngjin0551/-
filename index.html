@@ -1444,5 +1444,157 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getFirestore, collection, onSnapshot,
+  addDoc, deleteDoc, doc, setDoc
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// ── Firebase 설정 ──────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyB87poQjOSZrpBu8Yjb9xk5FNfPgYUD1qA",
+  authDomain:        "chanjin-kakeibo.firebaseapp.com",
+  projectId:         "chanjin-kakeibo",
+  storageBucket:     "chanjin-kakeibo.firebasestorage.app",
+  messagingSenderId: "639397790242",
+  appId:             "1:639397790242:web:92108c93f74111e35bc07b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── 연결 상태 표시 ──────────────────────────────
+function showSyncStatus(msg, color='var(--income)') {
+  let el = document.getElementById('sync-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sync-status';
+    el.style.cssText = `
+      position:fixed; top:calc(env(safe-area-inset-top,0px) + 6px); right:14px;
+      font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px;
+      background:var(--card); border:1px solid var(--border);
+      z-index:200; font-family:'Noto Sans KR',sans-serif;
+      transition: all .3s;
+    `;
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.color = color;
+}
+
+// ── 거래내역 실시간 동기화 ─────────────────────
+onSnapshot(collection(db, 'transactions'), (snapshot) => {
+  txList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  DB.set('kakeibo_tx', txList);
+  render();
+  showSyncStatus('🔴 실시간 연동 중');
+}, (err) => {
+  showSyncStatus('⚠️ 오프라인', 'var(--fixed)');
+});
+
+// ── 자산 실시간 동기화 ─────────────────────────
+onSnapshot(collection(db, 'assets'), (snapshot) => {
+  assetList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  DB.set('kakeibo_asset', assetList);
+  render();
+}, (err) => {
+  console.error(err);
+});
+
+// ── 저장 함수 오버라이드 (Firebase로 저장) ──────
+window.saveTxFirebase = async function(data) {
+  try {
+    await addDoc(collection(db, 'transactions'), data);
+  } catch(e) {
+    showToast('⚠️ 저장 실패 — 인터넷 연결 확인');
+  }
+};
+
+window.saveAssetFirebase = async function(data) {
+  try {
+    await addDoc(collection(db, 'assets'), data);
+  } catch(e) {
+    showToast('⚠️ 저장 실패 — 인터넷 연결 확인');
+  }
+};
+
+window.deleteTxFirebase = async function(id) {
+  try {
+    await deleteDoc(doc(db, 'transactions', id));
+  } catch(e) {
+    showToast('⚠️ 삭제 실패');
+  }
+};
+
+window.deleteAssetFirebase = async function(id) {
+  try {
+    await deleteDoc(doc(db, 'assets', id));
+  } catch(e) {
+    showToast('⚠️ 삭제 실패');
+  }
+};
+
+// ── 기존 함수 오버라이드 ───────────────────────
+// 거래 저장
+const _origSaveTx = window.saveTx;
+window.saveTx = async function() {
+  const amount  = parseFloat(document.getElementById('tx-amount').value);
+  const name    = document.getElementById('tx-name').value.trim();
+  const account = document.getElementById('tx-account').value;
+  const date    = document.getElementById('tx-date').value;
+  const memo    = document.getElementById('tx-memo').value.trim();
+  if (!amount || amount <= 0) { showToast('금액을 입력해주세요 💸'); return; }
+  if (!name)                  { showToast('내용을 입력해주세요 ✏️'); return; }
+  const data = { type:selType, name, amount, cat:selCat, account, owner:selOwner, date, memo };
+  await window.saveTxFirebase(data);
+  document.getElementById('modal-tx').classList.remove('open');
+  showToast('✅ 저장됐어요!');
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-name').value   = '';
+  document.getElementById('tx-memo').value   = '';
+};
+
+// 자산 저장
+window.saveAsset = async function() {
+  const name = document.getElementById('a-name').value.trim();
+  const buy  = parseFloat(document.getElementById('a-buy').value)||0;
+  const cur  = parseFloat(document.getElementById('a-cur').value)||0;
+  const inst = document.getElementById('a-inst').value.trim();
+  const memo = document.getElementById('a-memo').value.trim();
+  const type = document.getElementById('a-type').value;
+  if (!name)     { showToast('항목명을 입력해주세요 ✏️'); return; }
+  if (cur <= 0)  { showToast('현재가를 입력해주세요 💰'); return; }
+  const data = { type, name, inst, buy, cur, owner:selAssetOwner, memo };
+  await window.saveAssetFirebase(data);
+  document.getElementById('modal-asset').classList.remove('open');
+  showToast('✅ 자산 추가됐어요!');
+  document.getElementById('a-name').value = '';
+  document.getElementById('a-inst').value = '';
+  document.getElementById('a-buy').value  = '';
+  document.getElementById('a-cur').value  = '';
+  document.getElementById('a-memo').value = '';
+};
+
+// 거래 삭제
+window.deleteTx = async function(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 거래를 삭제할까요?')) return;
+  await window.deleteTxFirebase(id);
+  showToast('🗑️ 삭제됐어요');
+};
+
+// 자산 삭제
+window.deleteAsset = async function(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 자산을 삭제할까요?')) return;
+  await window.deleteAssetFirebase(id);
+  showToast('🗑️ 삭제됐어요');
+};
+
+console.log('✅ Firebase 연동 완료');
+</script>
 </body>
 </html>
