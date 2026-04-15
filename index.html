@@ -951,7 +951,7 @@ function renderHome() {
   ['와이프','남편','공동'].forEach((o,i) => {
     const id = ['h-wife','h-husb','h-joint'][i];
     const amt = txs.filter(t=>t.owner===o && t.type!=='income').reduce((s,t)=>s+t.amount,0);
-    document.getElementById(id).textContent = compact(amt);
+    document.getElementById(id).textContent = won(amt);
   });
 
   const recent = [...txs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
@@ -1020,7 +1020,7 @@ function renderAsset() {
   ['와이프','남편','공동'].forEach((o,i) => {
     const id = ['a-wife','a-husb','a-joint'][i];
     const amt = assetList.filter(a=>a.owner===o).reduce((s,a)=>s+a.cur,0);
-    document.getElementById(id).textContent = compact(amt);
+    document.getElementById(id).textContent = won(amt);
   });
 
   // 유형별 섹션
