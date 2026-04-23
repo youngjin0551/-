@@ -316,6 +316,34 @@ body {
 .howto-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 .howto-item { display: flex; align-items: flex-start; gap: 12px; background: var(--card); border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border); font-size: 13px; line-height: 1.5; }
 .howto-num { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, var(--wife), #a855f7); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+/* ── 수정 모달 액션 버튼 행 ── */
+.detail-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;
+}
+.btn-edit {
+  padding: 14px; border-radius: 14px; border: 1.5px solid var(--wife);
+  background: rgba(244,114,182,.1); color: var(--wife);
+  font-size: 14px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; text-align: center;
+}
+.btn-delete-soft {
+  padding: 14px; border-radius: 14px; border: 1.5px solid var(--border);
+  background: rgba(248,113,113,.08); color: var(--expense);
+  font-size: 14px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; text-align: center;
+}
+/* 수정 모드 — 인풋 위에 작은 라벨 */
+.edit-field { margin-bottom: 12px; }
+.edit-field .form-label { margin-bottom: 5px; }
+/* 수정 저장 버튼 */
+.btn-save-edit {
+  width: 100%; padding: 15px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, var(--wife), #a855f7);
+  color: #fff; font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  margin-top: 4px; box-shadow: 0 5px 18px rgba(244,114,182,.3);
+}
 </style>
 </head>
 <body>
@@ -786,7 +814,7 @@ function txHTML(t) {
   </div>`;
 }
 
-// [FIX 2] 거래 상세 모달
+// 거래 상세 — 보기 모드
 function openDetail(id) {
   const t = txList.find(x => x.id === id);
   if (!t) return;
@@ -800,34 +828,157 @@ function openDetail(id) {
   document.getElementById('detail-title').textContent = `${emoji} ${t.name}`;
   document.getElementById('detail-body').innerHTML = `
     <div class="detail-amount-big" style="color:${amtColor}">${amtSign}${won(t.amount)}</div>
-    <div class="detail-row">
-      <span class="detail-label">날짜</span>
-      <span class="detail-value">${t.date}</span>
+    <div class="detail-row"><span class="detail-label">날짜</span><span class="detail-value">${t.date}</span></div>
+    <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">${typeLabel}</span></div>
+    <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">${emoji} ${t.cat||'-'}</span></div>
+    <div class="detail-row"><span class="detail-label">계좌/카드</span><span class="detail-value">${t.account||'-'}</span></div>
+    <div class="detail-row"><span class="detail-label">지출자</span><span class="detail-value"><span class="owner-badge ${ownerClass}">${t.owner}</span></span></div>
+    ${t.memo ? `<div class="detail-row" style="flex-direction:column;gap:6px"><span class="detail-label">📝 메모</span><div class="detail-memo-box">${t.memo}</div></div>` : ''}
+    <div class="detail-actions">
+      <button class="btn-edit" onclick="openEditMode('${t.id}')">✏️ 수정하기</button>
+      <button class="btn-delete-soft" onclick="confirmDeleteTx('${t.id}')">🗑️ 삭제</button>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">유형</span>
-      <span class="detail-value">${typeLabel}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">카테고리</span>
-      <span class="detail-value">${emoji} ${t.cat||'-'}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">계좌/카드</span>
-      <span class="detail-value">${t.account||'-'}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">지출자</span>
-      <span class="detail-value"><span class="owner-badge ${ownerClass}">${t.owner}</span></span>
-    </div>
-    ${t.memo ? `
-    <div class="detail-row" style="flex-direction:column;gap:6px">
-      <span class="detail-label">📝 메모</span>
-      <div class="detail-memo-box">${t.memo}</div>
-    </div>` : ''}
-    <button class="save-btn" style="background:rgba(248,113,113,.15);color:var(--expense);box-shadow:none;margin-top:12px" onclick="deleteTx('${t.id}',event);document.getElementById('modal-detail').classList.remove('open')">🗑️ 이 거래 삭제</button>
   `;
   document.getElementById('modal-detail').classList.add('open');
+}
+
+// 거래 상세 — 수정 모드 (같은 모달 내에서 전환)
+function openEditMode(id) {
+  const t = txList.find(x => x.id === id);
+  if (!t) return;
+
+  // 수정용 임시 상태
+  let editType  = t.type;
+  let editOwner = t.owner;
+  let editCat   = t.cat;
+
+  const catOptionsHTML = (type, selected) =>
+    (CATS[type] || []).map(c =>
+      `<button class="cat-btn${c.id===selected?' active':''}" data-cat="${c.id}"
+        onclick="(function(el,id){document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');window._editCat=id;})(this,'${c.id}')"
+        style="font-size:11px">
+        <span class="cat-emoji">${c.emoji}</span>${c.id}
+      </button>`
+    ).join('');
+
+  window._editCat   = t.cat;
+  window._editType  = t.type;
+  window._editOwner = t.owner;
+
+  document.getElementById('detail-title').textContent = '✏️ 거래 수정';
+  document.getElementById('detail-body').innerHTML = `
+
+    <div class="edit-field">
+      <div class="form-label">거래 유형</div>
+      <div class="type-toggle" id="edit-type-toggle">
+        <button class="toggle-btn ${t.type==='income'?'active income-t':''}"  data-type="income"   onclick="setEditType('income',this)">💚 수입</button>
+        <button class="toggle-btn ${t.type==='fixed'?'active fixed':''}"      data-type="fixed"    onclick="setEditType('fixed',this)">📌 고정지출</button>
+        <button class="toggle-btn ${t.type==='variable'?'active variable':''}"data-type="variable" onclick="setEditType('variable',this)">📈 변동지출</button>
+      </div>
+    </div>
+
+    <div class="edit-field">
+      <label class="form-label">금액</label>
+      <input class="form-input amount-input" id="edit-amount" type="number" inputmode="numeric" value="${t.amount}" oninput="document.getElementById('edit-amount-display').textContent='₩'+Number(this.value||0).toLocaleString('ko-KR')">
+      <div class="amount-display" id="edit-amount-display">₩${t.amount.toLocaleString('ko-KR')}</div>
+    </div>
+
+    <div class="edit-field">
+      <label class="form-label">내용</label>
+      <input class="form-input" id="edit-name" type="text" value="${t.name}">
+    </div>
+
+    <div class="edit-field">
+      <div class="form-label">카테고리</div>
+      <div class="cat-grid" id="edit-cat-grid">${catOptionsHTML(t.type, t.cat)}</div>
+    </div>
+
+    <div class="edit-field">
+      <label class="form-label">계좌 / 카드</label>
+      <select class="form-select" id="edit-account">
+        ${['국민은행','카카오뱅크','토스뱅크','삼성카드','신한카드','현대카드','롯데카드','기타']
+          .map(a=>`<option value="${a}"${a===t.account?' selected':''}>${a}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="edit-field">
+      <div class="form-label">지출자 / 수령자</div>
+      <div class="owner-select-row" id="edit-owner-select">
+        <button class="owner-btn ${t.owner==='와이프'?'active wife':''}" data-owner="와이프" onclick="setEditOwner('와이프',this)">👩 와이프</button>
+        <button class="owner-btn ${t.owner==='남편'?'active husb':''}"   data-owner="남편"   onclick="setEditOwner('남편',this)">👨 남편</button>
+        <button class="owner-btn ${t.owner==='공동'?'active joint':''}"  data-owner="공동"   onclick="setEditOwner('공동',this)">🤝 공동</button>
+      </div>
+    </div>
+
+    <div class="edit-field">
+      <label class="form-label">날짜</label>
+      <input class="form-input" id="edit-date" type="date" value="${t.date}">
+    </div>
+
+    <div class="edit-field">
+      <label class="form-label">메모</label>
+      <input class="form-input" id="edit-memo" type="text" value="${t.memo||''}" placeholder="메모를 입력하세요">
+    </div>
+
+    <button class="btn-save-edit" onclick="saveEdit('${t.id}')">💾 수정 저장</button>
+    <button class="btn-delete-soft" style="width:100%;margin-top:8px" onclick="confirmDeleteTx('${t.id}')">🗑️ 삭제</button>
+  `;
+}
+
+// 수정 모드 — 유형 변경 시 카테고리 그리드 갱신
+function setEditType(type, el) {
+  window._editType = type;
+  document.querySelectorAll('#edit-type-toggle .toggle-btn').forEach(b => {
+    b.classList.remove('active','income-t','fixed','variable');
+    if (b.dataset.type === type) b.classList.add('active', type==='income'?'income-t':type);
+  });
+  const cats = CATS[type] || [];
+  window._editCat = cats[0]?.id || '';
+  document.getElementById('edit-cat-grid').innerHTML = cats.map(c =>
+    `<button class="cat-btn${c.id===window._editCat?' active':''}" data-cat="${c.id}"
+      onclick="(function(el,id){document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');window._editCat=id;})(this,'${c.id}')"
+      style="font-size:11px">
+      <span class="cat-emoji">${c.emoji}</span>${c.id}
+    </button>`
+  ).join('');
+}
+
+// 수정 모드 — 지출자 변경
+function setEditOwner(owner, el) {
+  window._editOwner = owner;
+  document.querySelectorAll('#edit-owner-select .owner-btn').forEach(b => {
+    b.classList.remove('active','wife','husb','joint');
+    if (b.dataset.owner === owner) b.classList.add('active', owner==='와이프'?'wife':owner==='남편'?'husb':'joint');
+  });
+}
+
+// 수정 저장 — localStorage
+function saveEdit(id) {
+  const amount = parseFloat(document.getElementById('edit-amount').value);
+  const name   = document.getElementById('edit-name').value.trim();
+  const date   = document.getElementById('edit-date').value;
+  const account= document.getElementById('edit-account').value;
+  const memo   = document.getElementById('edit-memo').value.trim();
+  if (!amount || amount <= 0) { showToast('금액을 입력해주세요 💸'); return; }
+  if (!name)                  { showToast('내용을 입력해주세요 ✏️'); return; }
+
+  const idx = txList.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  txList[idx] = { ...txList[idx], type: window._editType, name, amount, cat: window._editCat, account, owner: window._editOwner, date, memo };
+  saveTxDB();
+  document.getElementById('modal-detail').classList.remove('open');
+  showToast('✅ 수정됐어요!');
+  render();
+}
+
+// 삭제 확인 (상세/수정 모달 공용)
+function confirmDeleteTx(id) {
+  if (!confirm('이 거래를 삭제할까요?')) return;
+  txList = txList.filter(t => t.id !== id);
+  saveTxDB();
+  document.getElementById('modal-detail').classList.remove('open');
+  showToast('🗑️ 삭제됐어요');
+  render();
 }
 
 function renderAsset() {
@@ -1136,7 +1287,7 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').ca
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyB87poQjOSZrpBu8Yjb9xk5FNfPgYUD1qA",
@@ -1206,6 +1357,40 @@ window.deleteAsset = async function(id, e) {
   if (!confirm('이 자산을 삭제할까요?')) return;
   await window.deleteAssetFirebase(id);
   showToast('🗑️ 삭제됐어요');
+};
+
+// Firebase — 거래 수정 저장 오버라이드
+window.saveEdit = async function(id) {
+  const amount = parseFloat(document.getElementById('edit-amount').value);
+  const name   = document.getElementById('edit-name').value.trim();
+  const date   = document.getElementById('edit-date').value;
+  const account= document.getElementById('edit-account').value;
+  const memo   = document.getElementById('edit-memo').value.trim();
+  if (!amount || amount <= 0) { showToast('금액을 입력해주세요 💸'); return; }
+  if (!name)                  { showToast('내용을 입력해주세요 ✏️'); return; }
+  try {
+    await updateDoc(doc(db, 'transactions', id), {
+      type: window._editType, name, amount,
+      cat: window._editCat, account,
+      owner: window._editOwner, date, memo,
+    });
+    document.getElementById('modal-detail').classList.remove('open');
+    showToast('✅ 수정됐어요!');
+  } catch(e) {
+    showToast('⚠️ 수정 실패 — 인터넷 연결 확인');
+  }
+};
+
+// Firebase — confirmDeleteTx 오버라이드 (상세/수정 모달 공용)
+window.confirmDeleteTx = async function(id) {
+  if (!confirm('이 거래를 삭제할까요?')) return;
+  try {
+    await deleteDoc(doc(db, 'transactions', id));
+    document.getElementById('modal-detail').classList.remove('open');
+    showToast('🗑️ 삭제됐어요');
+  } catch(e) {
+    showToast('⚠️ 삭제 실패');
+  }
 };
 </script>
 </body>
