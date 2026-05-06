@@ -209,6 +209,8 @@ body {
 .form-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; letter-spacing: .5px; }
 .form-input, .form-select { width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 14px; color: var(--text); font-size: 15px; font-family: 'Noto Sans KR', sans-serif; outline: none; transition: border-color .2s; appearance: none; -webkit-appearance: none; }
 .form-input:focus, .form-select:focus { border-color: var(--wife); }
+.form-select optgroup { color: var(--muted); font-size: 11px; font-weight: 700; }
+.form-select option   { color: var(--text);  font-size: 14px; background: var(--card); }
 .form-input.amount-input { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 600; text-align: right; }
 .amount-display { text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .type-toggle { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
@@ -558,13 +560,68 @@ body {
     <div class="form-group">
       <label class="form-label">계좌 / 카드</label>
       <select class="form-select" id="tx-account">
-        <option value="국민은행">국민은행</option>
-        <option value="카카오뱅크">카카오뱅크</option>
-        <option value="토스뱅크">토스뱅크</option>
-        <option value="삼성카드">삼성카드</option>
-        <option value="신한카드">신한카드</option>
-        <option value="현대카드">현대카드</option>
-        <option value="롯데카드">롯데카드</option>
+        <optgroup label="🏦 국내 1금융권 은행">
+          <option value="KB국민은행">KB국민은행</option>
+          <option value="신한은행">신한은행</option>
+          <option value="우리은행">우리은행</option>
+          <option value="하나은행">하나은행</option>
+          <option value="NH농협은행">NH농협은행</option>
+          <option value="IBK기업은행">IBK기업은행</option>
+          <option value="SC제일은행">SC제일은행</option>
+          <option value="씨티은행">씨티은행</option>
+          <option value="한국산업은행">한국산업은행</option>
+          <option value="수협은행">수협은행</option>
+          <option value="광주은행">광주은행</option>
+          <option value="전북은행">전북은행</option>
+          <option value="제주은행">제주은행</option>
+          <option value="대구은행">대구은행</option>
+          <option value="부산은행">부산은행</option>
+          <option value="경남은행">경남은행</option>
+        </optgroup>
+        <optgroup label="📱 인터넷 은행">
+          <option value="카카오뱅크">카카오뱅크</option>
+          <option value="토스뱅크">토스뱅크</option>
+          <option value="케이뱅크">케이뱅크</option>
+        </optgroup>
+        <optgroup label="🏢 저축은행 / 기타">
+          <option value="우체국">우체국</option>
+          <option value="새마을금고">새마을금고</option>
+          <option value="신협">신협</option>
+          <option value="상호저축은행">상호저축은행</option>
+        </optgroup>
+        <optgroup label="💳 국내 카드사">
+          <option value="삼성카드">삼성카드</option>
+          <option value="신한카드">신한카드</option>
+          <option value="현대카드">현대카드</option>
+          <option value="롯데카드">롯데카드</option>
+          <option value="KB국민카드">KB국민카드</option>
+          <option value="우리카드">우리카드</option>
+          <option value="하나카드">하나카드</option>
+          <option value="NH농협카드">NH농협카드</option>
+          <option value="BC카드">BC카드</option>
+          <option value="IBK기업카드">IBK기업카드</option>
+          <option value="카카오페이카드">카카오페이카드</option>
+          <option value="토스카드">토스카드</option>
+          <option value="케이뱅크카드">케이뱅크카드</option>
+        </optgroup>
+        <optgroup label="🌐 해외 카드사">
+          <option value="Visa">Visa</option>
+          <option value="Mastercard">Mastercard</option>
+          <option value="American Express">American Express</option>
+          <option value="JCB">JCB</option>
+          <option value="UnionPay">UnionPay (은련)</option>
+          <option value="Discover">Discover</option>
+        </optgroup>
+        <optgroup label="📲 간편결제">
+          <option value="카카오페이">카카오페이</option>
+          <option value="네이버페이">네이버페이</option>
+          <option value="토스페이">토스페이</option>
+          <option value="삼성페이">삼성페이</option>
+          <option value="애플페이">애플페이</option>
+          <option value="페이코">페이코</option>
+          <option value="제로페이">제로페이</option>
+        </optgroup>
+        <option value="현금">💵 현금</option>
         <option value="기타">기타</option>
       </select>
     </div>
@@ -667,6 +724,16 @@ const CATS = {
 const CAT_EMOJI = {};
 Object.values(CATS).flat().forEach(c => CAT_EMOJI[c.id] = c.emoji);
 const ASSET_COLORS = {'예·적금':'#3b82f6','주식':'#22c55e','코인':'#f97316','부동산':'#a855f7','현금':'#94a3b8','달러(USD)':'#34d399','기타자산':'#64748b'};
+
+const ACCOUNTS = [
+  { label: '🏦 국내 1금융권 은행', items: ['KB국민은행','신한은행','우리은행','하나은행','NH농협은행','IBK기업은행','SC제일은행','씨티은행','한국산업은행','수협은행','광주은행','전북은행','제주은행','대구은행','부산은행','경남은행'] },
+  { label: '📱 인터넷 은행',       items: ['카카오뱅크','토스뱅크','케이뱅크'] },
+  { label: '🏢 저축은행 / 기타',   items: ['우체국','새마을금고','신협','상호저축은행'] },
+  { label: '💳 국내 카드사',       items: ['삼성카드','신한카드','현대카드','롯데카드','KB국민카드','우리카드','하나카드','NH농협카드','BC카드','IBK기업카드','카카오페이카드','토스카드','케이뱅크카드'] },
+  { label: '🌐 해외 카드사',       items: ['Visa','Mastercard','American Express','JCB','UnionPay (은련)','Discover'] },
+  { label: '📲 간편결제',          items: ['카카오페이','네이버페이','토스페이','삼성페이','애플페이','페이코','제로페이'] },
+  { label: '기타',                 items: ['💵 현금','기타'] },
+];
 
 function switchTab(name, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -896,8 +963,11 @@ function openEditMode(id) {
     <div class="edit-field">
       <label class="form-label">계좌 / 카드</label>
       <select class="form-select" id="edit-account">
-        ${['국민은행','카카오뱅크','토스뱅크','삼성카드','신한카드','현대카드','롯데카드','기타']
-          .map(a=>`<option value="${a}"${a===t.account?' selected':''}>${a}</option>`).join('')}
+        ${ACCOUNTS.map(g =>
+          `<optgroup label="${g.label}">${g.items.map(a =>
+            `<option value="${a}"${a===t.account?' selected':''}>${a}</option>`
+          ).join('')}</optgroup>`
+        ).join('')}
       </select>
     </div>
 
